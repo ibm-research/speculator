@@ -1,0 +1,54 @@
+{
+    "victim": {
+        "0": {
+                "name" : "DIV_OP_COUNT",
+                "description" : "NONE",
+                "mask" : ""
+        },
+
+        "1": {
+                "name" : "RETIRED_UOPS",
+                "description" : "NONE",
+                "mask" : ""
+        },
+
+        "2": {
+                "name" : "PERF_COUNT_SW_CONTEXT_SWITCHES",
+                "description" : "NONE",
+                "mask" : ""
+        },
+
+        "3": {
+                "name" : "RETIRED_BRANCH_INSTRUCTIONS_MISPREDICTED",
+                "description" : "NONE",
+                "mask" : ""
+        }
+    },
+
+    "attacker": {
+        "0": {
+                "name" : "DIV_OP_COUNT",
+                "description" : "NONE",
+                "mask" : ""
+        },
+
+        "1": {
+                "name" : "RETIRED_UOPS",
+                "description" : "NONE",
+                "mask" : ""
+        },
+
+        "2": {
+                "name" : "PERF_COUNT_SW_CONTEXT_SWITCHES",
+                "description" : "NONE",
+                "mask" : ""
+        },
+
+        "3": {
+                "name" : "RETIRED_BRANCH_INSTRUCTIONS_MISPREDICTED",
+                "description" : "NONE",
+                "mask" : ""
+        }
+    }
+}
+

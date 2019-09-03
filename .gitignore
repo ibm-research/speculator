@@ -1,0 +1,12 @@
+perf.data
+perf.data.old
+perf_test
+perf_test_asm
+lib/libhelper.a
+*.o
+speculator.json
+speculator.env
+tests/*.asm
+tests/*.c
+tests/*.inc
+tests/*.in

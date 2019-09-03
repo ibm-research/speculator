@@ -1,0 +1,53 @@
+{
+    "victim": {
+        "0": {
+            "name" : "LD_BLOCKS",
+            "description" : "NONE",
+            "mask" : "STORE_FORWARD"
+        },
+
+        "1": {
+            "name" : "UOPS_EXECUTED",
+            "description" : "NONE",
+            "mask" : "CORE"
+        },
+
+        "2": {
+            "name" : "BR_MISP_RETIRED",
+            "description" : "NONE",
+            "mask" : "ALL_BRANCHES"
+        },
+
+        "3": {
+            "name" : "UOPS_ISSUED",
+            "description" : "NONE",
+            "mask" : "SINGLE_MUL"
+        }
+    },
+
+    "attacker": {
+        "0": {
+            "name" : "LD_BLOCKS",
+            "description" : "NONE",
+            "mask" : "STORE_FORWARD"
+        },
+
+        "1": {
+            "name" : "BR_MISP_RETIRED",
+            "description" : "NONE",
+            "mask" : "NEAR_TAKEN"
+        },
+
+        "2": {
+            "name" : "BR_MISP_RETIRED",
+            "description" : "NONE",
+            "mask" : "ALL_BRANCHES"
+        },
+
+        "3": {
+            "name" : "BR_MISP_RETIRED",
+            "description" : "NONE",
+            "mask" : "CONDITIONAL"
+        }
+    }
+}

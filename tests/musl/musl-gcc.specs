@@ -1,0 +1,32 @@
+%rename cpp_options old_cpp_options
+
+*cpp_options:
+-nostdinc -isystem /home/mbr/repositories/musl-root/include -isystem include%s %(old_cpp_options)
+
+*cc1:
+%(cc1_cpu) -nostdinc -isystem /home/mbr/repositories/musl-root/include -isystem include%s
+
+*link_libgcc:
+-L/home/mbr/repositories/musl-root/lib -L .%s
+
+*libgcc:
+libgcc.a%s %:if-exists(libgcc_eh.a%s)
+
+*startfile:
+%{!shared: /home/mbr/repositories/musl-root/lib/%{pie:S}crt1.o} /home/mbr/repositories/musl-root/lib/crti.o %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}
+
+*endfile:
+%{shared|pie:crtendS.o%s;:crtend.o%s} /home/mbr/repositories/musl-root/lib/crtn.o
+
+*link:
+-dynamic-linker /lib/ld-musl-x86_64.so.1 -nostdlib %{shared:-shared} %{static:-static} %{rdynamic:-export-dynamic}
+
+*esp_link:
+
+
+*esp_options:
+
+
+*esp_cpp_options:
+
+

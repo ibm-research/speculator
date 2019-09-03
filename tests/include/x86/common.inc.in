@@ -1,0 +1,117 @@
+; Copyright 2019 IBM Corporation
+;
+; Licensed under the Apache License, Version 2.0 (the "License");
+; you may not use this file except in compliance with the License.
+; You may obtain a copy of the License at
+;
+;     http://www.apache.org/licenses/LICENSE-2.0
+;
+; Unless required by applicable law or agreed to in writing, software
+; distributed under the License is distributed on an "AS IS" BASIS,
+; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; See the License for the specific language governing permissions and
+; limitations under the License.
+
+%define SYS_EXIT 60
+%define SYS_WRITE 1
+%define SYS_OPEN 2
+%define SYS_CLOSE 3
+%define SYS_LSEEK 8
+%define SYS_GETCPU 309
+%define SYS_PREAD64 17
+%define SYS_PWRITE64 18
+%define SYS_RT_SIGACTION 13
+%define SYS_RT_SIGRETURN 15
+%define VICTIM_PROCESS @VICTIM_CORE@
+%define ATTACKER_PROCESS @ATTACKER_CORE@
+%define VICTIM_PROCESS_STR "@VICTIM_CORE@"
+%define ATTACKER_PROCESS_STR "@ATTACKER_CORE@"
+
+%macro check_pinning 1
+    %%.pinning:
+    mov rax, SYS_GETCPU
+    mov rdi, val
+    xor rsi, rsi
+    xor rdx, rdx
+    syscall
+    mov rax, [val]
+    cmp rax, %1
+    jne %%.pinning
+%endmacro
+
+%macro msr_open 0
+    mov rax, SYS_OPEN
+    mov rdi, dev_file ; /dev/cpu/0/msr
+    mov rsi, 0x0002 ; O_RDWR
+    mov rdx, 600o ; read-write
+    syscall
+
+    mov [fd], eax ; storing fd for further use
+%endmacro
+
+%macro msr_close 0
+    mov rax, SYS_CLOSE
+    mov rdi, [fd]
+    syscall
+%endmacro
+
+%macro exit 1
+    mov rax, SYS_EXIT
+    mov rdi, %1
+    syscall
+%endmacro
+
+; print *mem, len
+%macro print 2
+    push rdx
+    push rax
+    push rsi
+    mov rax, SYS_WRITE
+    mov rdi, 1 ; stdout
+    mov rsi, %1
+    mov rdx, %2 ;len
+    syscall
+    pop rsi
+    pop rax
+    pop rdx
+%endmacro
+
+
+; copy: dst, src, len
+%macro copy 3
+    push rcx
+    push rbx
+    mov rcx, %3
+    %%.copy:
+    mov bl, [%2+rcx-1]
+    mov [%1+rcx-1], bl
+    loop %%.copy
+    pop rbx
+    pop rcx
+%endmacro
+
+%macro pipeline_flush 0
+    mov rax, 0
+    cpuid
+    lfence
+%endmacro
+
+; sys_rt_sigaction - alter an action taken by a process
+; @sig: signal to be sent
+; @act: new sigaction
+; @oact: used to save the previous sigaction
+; @sigsetsize: size of sigset_t type
+%macro setup_signal_handler 1
+    mov     QWORD [sigaction.sa_handler], signal_handler
+    mov     QWORD [sigaction.sa_restorer], signal_restorer
+    mov     eax, SA_RESTART | SA_RESTORER | SA_SIGINFO
+    mov     DWORD [sigaction.sa_flags], eax
+    mov     rax, SYS_RT_SIGACTION ; system call number
+    mov     rdi, %1 ; signal number
+    lea     rsi, [sigaction] ; sigaction struct
+    xor     rdx, rdx ; save previous sigaction (no)
+    mov     r10, NSIG_WORDS ; sigsetsize
+    syscall
+    cmp     eax, 0
+%endmacro
+

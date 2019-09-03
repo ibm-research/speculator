@@ -1,0 +1,28 @@
+{
+    "DATA": [
+        "something: dq 0",
+        "something2: dq 0"
+    ],
+
+    "INST": [
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax",
+        "xor eax, eax"
+    ]
+}
