@@ -1,0 +1,18 @@
+{
+    "DATA": [
+        "something: dq 0",
+        "something2: dq 0"
+    ],
+
+    "INST": [
+        "mov ebx, eax",
+        "mov eax, ebx",
+        "mov ebx, eax",
+        "mov eax, ebx",
+        "mov ebx, eax",
+        "mov eax, ebx",
+        "mov ebx, eax",
+        "mov eax, ebx",
+        "mov ebx, ebx"
+     ]
+}
