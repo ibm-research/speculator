@@ -1,0 +1,13 @@
+{
+    "DATA": [
+        "something: dq 0"
+    ],
+
+    "INST": [
+
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop"
+     ]
+}
