@@ -1,0 +1,34 @@
+{
+    "DATA": [
+        "something: dq 0",
+        "something2: dq 0"
+    ],
+
+    "INST": [
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop",
+        "fnop"
+    ]
+}
