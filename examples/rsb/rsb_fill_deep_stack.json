@@ -1,0 +1,32 @@
+{
+    "DATA": [
+        "something: dq 0",
+        "something2: dq 0"
+    ],
+
+    "INST": [
+
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext",
+        "callnext"
+     ]
+}
