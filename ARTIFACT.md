@@ -11,10 +11,15 @@ NOTE: This guide requires to have the proper environment variable set (e.g. SPEC
 
 ## Paper Authors
 Andrea Mambretti            mbr@ccs.neu.edu (Preferred Contact)
+
 Matthias Neugschwandtner    mneug@iseclab.org
+
 Alessandro Sorniotti        aso@zurich.ibm.com
+
 Engin Kirda                 ek@ccs.neu.edu
+
 William Robertson           wkr@ccs.neu.edu
+
 Anil Kurmus                 kur@zurich.ibm.com
 
 ## Requirements
