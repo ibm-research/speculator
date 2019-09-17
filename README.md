@@ -2,6 +2,10 @@
 
 Tool to Analyze Speculative Execution Attacks and Mitigations
 
+## QuickStart
+Hereafter you can find information on how to build and use
+speculator. For more infomation please refer to the [wiki](https://github.com/ibm-research/speculator/wiki).
+
 ### Dependencies
 Speculator depends on the json-c and the pfmlib libraries (ninja is optional).
 To post-process speculator output is necessary to have sqlalchemy installed as well.
@@ -16,6 +20,15 @@ sudo apt-get install python-sqlalchemy
 sudo apt-get install cmake
 sudo apt-get install nasm
 ```
+
+Other two hard requirements for speculator to work properly are:
+
+1) The system should be booted without **Secure Boot**
+
+2) The `msr` kernel module should be loaded:
+
+`sudo modprobe msr`
+
 
 ### Build
 First of all, create speculator-build and speculator-install folders.
@@ -162,33 +175,33 @@ follow that model. [AVH git extension][git-flow-avh] makes things much easier to
 therefore everyone is invited to check them out.
 
 ### References
-[rdpmc blog entry] (https://software.intel.com/en-us/forums/software-tuning-performance-optimization-platform-monitoring/topic/595214)
+[rdpmc blog entry](https://software.intel.com/en-us/forums/software-tuning-performance-optimization-platform-monitoring/topic/595214)
 
-[Compiler Performance Bible] (http://www.agner.org/optimize/)
+[Compiler Performance Bible](http://www.agner.org/optimize/)
 
-[Intel Performance Counters List based on models] (https://download.01.org/perfmon/index/)
+[Intel Performance Counters List based on models](https://download.01.org/perfmon/index/)
 
-[Performance Counters List for all arch (e.g. PowerPC, ARM, Intel)] (http://oprofile.sourceforge.net/docs/)
+[Performance Counters List for all arch (e.g. PowerPC, ARM, Intel)](http://oprofile.sourceforge.net/docs/)
 
-[Perf Event Guide] (http://www.brendangregg.com/perf.html)
+[Perf Event Guide](http://www.brendangregg.com/perf.html)
 
-[BlackHat talk on PMC] (https://www.blackhat.com/docs/us-15/materials/us-15-Herath-These-Are-Not-Your-Grand-Daddys-CPU-Performance-Counters-CPU-Hardware-Performance-Counters-For-Security.pdf)
+[BlackHat talk on PMC](https://www.blackhat.com/docs/us-15/materials/us-15-Herath-These-Are-Not-Your-Grand-Daddys-CPU-Performance-Counters-CPU-Hardware-Performance-Counters-For-Security.pdf)
 
-[Interesting Formulations (check the last slides of the presentation)] (https://www.slideshare.net/chris1adkin/sql-sever-engine-batch-mode-and-cpu-architectures)
+[Interesting Formulations (check the last slides of the presentation)](https://www.slideshare.net/chris1adkin/sql-sever-engine-batch-mode-and-cpu-architectures)
 
-[Another linux perf tool guide] (http://oliveryang.net/2016/07/linux-perf-tools-tips/)
+[Another linux perf tool guide](http://oliveryang.net/2016/07/linux-perf-tools-tips/)
 
-[Interesting talk on BPF and perf] (https://kernel-recipes.org/en/2017/talks/performance-analysis-with-bpf/)
+[Interesting talk on BPF and perf](https://kernel-recipes.org/en/2017/talks/performance-analysis-with-bpf/)
 
-[Intel MSR Performance Monitoring Basics] (http://www.mindfruit.co.uk/2012/11/intel-msr-performance-monitoring-basics.html)
+[Intel MSR Performance Monitoring Basics](http://www.mindfruit.co.uk/2012/11/intel-msr-performance-monitoring-basics.html)
 
-[msr-tools] (https://github.com/01org/msr-tools)
+[msr-tools](https://github.com/01org/msr-tools)
 
-[Kernel msr impl] (https://elixir.bootlin.com/linux/v3.16.2/source/arch/x86/kernel/msr.c)
+[Kernel msr impl](https://elixir.bootlin.com/linux/v3.16.2/source/arch/x86/kernel/msr.c)
 
-[Blog post on msr problem intel website] (https://software.intel.com/pt-br/forums/software-tuning-performance-optimization-platform-monitoring/topic/520430)
+[Blog post on msr problem intel website](https://software.intel.com/pt-br/forums/software-tuning-performance-optimization-platform-monitoring/topic/520430)
 
-[Assembly def rdmsr wrmsr linux kernel] (https://elixir.bootlin.com/linux/latest/source/arch/x86/lib/msr-reg.S)
+[Assembly def rdmsr wrmsr linux kernel](https://elixir.bootlin.com/linux/latest/source/arch/x86/lib/msr-reg.S)
 
 [git-flow]: http://nvie.com/posts/a-successful-git-branching-model/
 [git-flow-avh]: https://github.com/petervanderdoes/gitflow/
