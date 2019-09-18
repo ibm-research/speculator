@@ -214,7 +214,7 @@ As before, first is good to run the cleanup pass described above.
 Then we can link the files inside the test folder with:
 
 ```
-ln -s $SPEC_H/examples/v1_various_cond_cycles/\*.asm $SPEC_H/tests
+ln -s $SPEC_H/examples/v1_various_cond_cycles/*.asm $SPEC_H/tests
 ```
 
 For each one of the conditions we have two tests. The first test, prefixed with `v1_cond`, is the one that will trigger speculative execution.
@@ -301,7 +301,7 @@ The files for the tests are under `$SPEC_H/examples/mpx`.
 
 After cleanup, run the usual commands to create tests, configure, compile, run and aggregate the results:
 ```
-$SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/mpx $SPEC_H/examples/mpx/spec_length.json $SPEC_H/examples/mpx/mpx/asm
+$SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/mpx $SPEC_H/examples/mpx/spec_length.json $SPEC_H/examples/mpx/mpx.asm
 cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
 ninja -C $SPEC_B install
 sudo $SPEC_H/scripts/run_test.py $SPEC_I -r 1000 -c
