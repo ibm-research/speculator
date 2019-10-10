@@ -5,9 +5,9 @@ using Speculator.
 `Victim` performs an indirect call to a "correct" location that simply return and exit. It contains
 three other functions (verify, verify2, verify3) that contain speculative execution markers.
 
-`verify` contains 1 LD_BLOCK.STORE_FORWARD \\
-`verify2` contains 3 LD_BLOCK.STORE_FORWARD\\
-`verify3` contains 6 LD_BLOCK.STORE_FORWARD\\
+`verify` contains 1 LD_BLOCK.STORE_FORWARD  
+`verify2` contains 3 LD_BLOCK.STORE_FORWARD  
+`verify3` contains 6 LD_BLOCK.STORE_FORWARD  
 
 These functions are never called in the victim context . In fact, if executed
 as a stand-alone program victim does not trigger any marker of type
