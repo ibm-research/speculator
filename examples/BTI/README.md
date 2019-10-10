@@ -5,9 +5,9 @@ using Speculator.
 `Victim` performs an indirect call to a "correct" location that simply return and exit. It contains
 three other functions (verify, verify2, verify3) that contain speculative execution markers.
 
-verify contains 1 LD_BLOCK.STORE_FORWARD
-verify2 contains 3 LD_BLOCK.STORE_FORWARD
-verify3 contains 6 LD_BLOCK.STORE_FORWARD
+`verify` contains 1 LD_BLOCK.STORE_FORWARD \\
+`verify2` contains 3 LD_BLOCK.STORE_FORWARD\\
+`verify3` contains 6 LD_BLOCK.STORE_FORWARD\\
 
 These functions are never called in the victim context . In fact, if executed
 as a stand-alone program victim does not trigger any marker of type
@@ -48,7 +48,7 @@ On KabyLake i7-8650U we have results around ~950 successful hijack over 1000
 tries.
 
 ## Known problems
-BTI is very sensible to various paramets which might drastically change the
+BTI is very sensible to various parameters which might drastically change the
 success rate of the injection. Hereafter, a non-complete list of them
 
 ### History lenght
@@ -106,3 +106,23 @@ attacker has finished its execution)
 `-d` adds delay between the start of victim and the attacker in nanosecond (To be
 noticed is that a big delay is known to degradate the signal so do not push it
 too far :) )
+
+### Is the attacker running in the right co-located thread?
+One possible reason for this attack not to be working is that the machine has
+not SMT enabled and/or the attacker process is not running on a co-located
+thread compared to the victim. Speculator default value for the co-located
+thread is 5 since most of our cpus have 4 cores/8 threads but each CPU/OS pair enumerates differently.
+
+Check the output of:
+```
+cat /proc/cpuinfo | egrep -e "(processor|core id)"
+```
+to indentify the right co-located thread.
+Once you indentified the processor number, you can simply re-run cmake with
+`-DATTACKER=X` to propagate this piece of information.
+
+For instance:
+
+```
+cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" -DATTACKER=5
+```
