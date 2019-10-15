@@ -80,21 +80,22 @@ start_process(char *filename,
     CPU_SET(core, &set);
     sched_setaffinity(getpid(), sizeof(cpu_set_t), &set);
 
-    ret = setpriority(PRIO_PROCESS, 0, -20);
+    if (!mflag) {
+        ret = setpriority(PRIO_PROCESS, 0, -20);
 
-    if (ret != 0) {
-        fprintf (stderr, "Impossible set priority to child\n");
-        exit(EXIT_FAILURE);
+        if (ret != 0) {
+            fprintf (stderr, "Impossible set priority to child\n");
+            exit(EXIT_FAILURE);
+        }
+
+        param.sched_priority = 99;
+        ret = sched_setscheduler(0, SCHED_RR, &param);
+
+        if (ret != 0) {
+            fprintf (stderr, "Impossible set scheduler RR proprity\n");
+            exit(EXIT_FAILURE);
+        }
     }
-
-    param.sched_priority = 99;
-    ret = sched_setscheduler(0, SCHED_RR, &param);
-
-    if (ret != 0) {
-        fprintf (stderr, "Impossible set scheduler RR proprity\n");
-        exit(EXIT_FAILURE);
-    }
-
     sem_wait(sem);
     sem_post(sem);
 
@@ -182,9 +183,11 @@ start_monitor_inline(int victim_pid,
                      int msr_fd_attacker) {
     int status = 0;
 
-    set_counters(msr_fd_victim, 0);
-    if (aflag && ATTACKER_CORE != VICTIM_CORE)
-        set_counters(msr_fd_attacker, 1);
+    if (!mflag) { // Set counters unless monitor-only mode
+        set_counters(msr_fd_victim, 0);
+        if (aflag && ATTACKER_CORE != VICTIM_CORE)
+            set_counters(msr_fd_attacker, 1);
+    }
 
     if (aflag && !iflag) {
         sem_post(sem_attacker);
@@ -218,13 +221,17 @@ start_monitor_inline(int victim_pid,
         waitpid(victim_pid, &status, 0);
     }
 
-    dump_results(output_filename, msr_fd_victim, 0);
+    if (!mflag) { // Skip dump result if monitor-only
+        dump_results(output_filename, msr_fd_victim, 0);
+    }
 
     if (aflag) {
         if (!sflag) {
             waitpid(attacker_pid, &status, 0);
         }
-        dump_results(output_filename_attacker, msr_fd_attacker, 1);
+        if (!mflag) { // Skip dump result if monitor-only
+            dump_results(output_filename_attacker, msr_fd_attacker, 1);
+        }
     }
 }
 
@@ -268,7 +275,7 @@ main(int argc, char **argv) {
     sched_setaffinity(getpid(), sizeof(cpu_set_t), &set);
 
     /* Reading out params */
-    while ((opt = getopt_long(argc, argv, "hv:a:c:o:qr:id:s",
+    while ((opt = getopt_long(argc, argv, "hv:a:c:o:qr:id:sm",
                 long_options, &option_index)) != -1) {
         switch (opt) {
             case 'h':
@@ -309,6 +316,9 @@ main(int argc, char **argv) {
                     fprintf(stderr, "Delay must be positive\n");
                     usage_and_quit(argv);
                 }
+                break;
+            case 'm':
+                mflag = 1;
                 break;
             case 0: // venv
                 aenvflag = 1;
@@ -385,7 +395,7 @@ main(int argc, char **argv) {
         usage_and_quit(argv);
     }
 
-    if(geteuid() != 0) {
+    if(!mflag && geteuid() != 0) {
         fprintf (stderr, "This program must run as root " \
                          "to be able to open msr device\n");
         exit(EXIT_FAILURE);
@@ -421,53 +431,54 @@ main(int argc, char **argv) {
     sem_init(sem_victim, 1, 1);
     sem_init(sem_attacker, 1, 1);
 
-    parse_config(config_filename);
+    if (!mflag) { // Skip configuration of counters if monitor-only
+        parse_config(config_filename);
 
-    recursive_mkdir(output_filename);
+        recursive_mkdir(output_filename);
 
-    init_result_file(output_filename, 0);
+        init_result_file(output_filename, 0);
 
-    if (aflag) {
-        output_filename_attacker = (char *) malloc(sizeof(char) * FILENAME_LENGTH);
-        snprintf (output_filename_attacker, FILENAME_LENGTH+1, "%s.attacker", output_filename);
-        init_result_file(output_filename_attacker, 1);
-    }
+        if (aflag) {
+            output_filename_attacker = (char *) malloc(sizeof(char) * FILENAME_LENGTH);
+            snprintf (output_filename_attacker, FILENAME_LENGTH+1, "%s.attacker", output_filename);
+            init_result_file(output_filename_attacker, 1);
+        }
 
-    // Opening cpu msr file for the victim cpu
-    msr_path_victim = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
-    snprintf (msr_path_victim, strlen(MSR_FORMAT)+1, MSR_FORMAT, VICTIM_CORE);
+        // Opening cpu msr file for the victim cpu
+        msr_path_victim = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
+        snprintf (msr_path_victim, strlen(MSR_FORMAT)+1, MSR_FORMAT, VICTIM_CORE);
 
-    debug_print("Opening %s device for victim\n", msr_path_victim);
+        debug_print("Opening %s device for victim\n", msr_path_victim);
 
-    // Get fd to MSR register
-    msr_fd_victim = open(msr_path_victim, O_RDWR | O_CLOEXEC);
+        // Get fd to MSR register
+        msr_fd_victim = open(msr_path_victim, O_RDWR | O_CLOEXEC);
 
-    if (msr_fd_victim < 0) {
-        fprintf(stderr, "Impossible to open the %s device\n", msr_path_victim);
-        free(msr_path_victim);
-        exit(EXIT_FAILURE);
-    }
-
-    free(msr_path_victim);
-
-    // Opening cpu msr file for the attacker cpu
-    // if running in attacker/victim mode
-    if (aflag) {
-        msr_path_attacker = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
-        snprintf (msr_path_attacker, strlen(MSR_FORMAT)+1, MSR_FORMAT, ATTACKER_CORE);
-        debug_print("Opening %s device for attacker\n", msr_path_attacker);
-
-        msr_fd_attacker = open(msr_path_attacker, O_RDWR | O_CLOEXEC);
-
-        if(msr_fd_attacker < 0) {
-            fprintf(stderr, "Impossible to open the %s device\n", msr_path_attacker);
-            free(msr_path_attacker);
+        if (msr_fd_victim < 0) {
+            fprintf(stderr, "Impossible to open the %s device\n", msr_path_victim);
+            free(msr_path_victim);
             exit(EXIT_FAILURE);
         }
 
-        free(msr_path_attacker);
-    }
+        free(msr_path_victim);
 
+        // Opening cpu msr file for the attacker cpu
+        // if running in attacker/victim mode
+        if (aflag) {
+            msr_path_attacker = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
+            snprintf (msr_path_attacker, strlen(MSR_FORMAT)+1, MSR_FORMAT, ATTACKER_CORE);
+            debug_print("Opening %s device for attacker\n", msr_path_attacker);
+
+            msr_fd_attacker = open(msr_path_attacker, O_RDWR | O_CLOEXEC);
+
+            if(msr_fd_attacker < 0) {
+                fprintf(stderr, "Impossible to open the %s device\n", msr_path_attacker);
+                free(msr_path_attacker);
+                exit(EXIT_FAILURE);
+            }
+
+            free(msr_path_attacker);
+        }
+    }
     // Repeat X times experiment
     for (int i = 0; i < repeat; ++i) {
 #ifdef DUMMY
@@ -543,10 +554,12 @@ main(int argc, char **argv) {
     }
 
 #ifdef INTEL
-    // RE-ENABLE ALL COUNTERS
-    write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_victim, 15ull | (7ull << 32));
-    if (aflag)
-        write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_attacker, 15ull | (7ull << 32));
+    if (!mflag) { // Skip re-enabling if monitor-only mode
+        // RE-ENABLE ALL COUNTERS
+        write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_victim, 15ull | (7ull << 32));
+        if (aflag)
+            write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_attacker, 15ull | (7ull << 32));
+    }
 #endif //INTEL
 
     close(msr_fd_victim);

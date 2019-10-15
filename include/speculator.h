@@ -60,6 +60,7 @@
                      "\t--vpar \t\tspecifies the parameters to pass to the victim (if any)\n" \
                      "\t--apar \t\tspecifies the parameters to pass to the attacker (if any)\n"\
                      "\t--serial/-s \tserialize the execution of attacker and victim\n" \
+                     "\t--monitor-only/-m \tenables monitor only mode, speculator does not set/save PMC and does not require root under this mode\n" \
                      "\t--verbose \tenables verbose mode\n" \
                      "\t--help/-h \tprints this message\n" \
 
@@ -116,6 +117,7 @@ static int rflag = 0;     // FLAG repeat option
 static int iflag = 0;     // FLAG invert start of attack/victim
 static int dflag = 0;     // FLAG delay flag
 static int sflag = 0;     // FLAG serial execution of attack/victim
+static int mflag = 0;     // FLAG monitor-only mode
 static int verbflag = 0;  // FLAG verbose mode
 static int venvflag = 0;  // FLAG victim env var option
 static int aenvflag = 0;  // FLAG attacker env var option
@@ -131,20 +133,21 @@ static char *attacker_parameters[100] = {NULL};
 
 // Speculator commandline options
 static struct option long_options[] = {
-    {"help",        no_argument,        NULL, 'h'},
-    {"victim",      required_argument,  NULL, 'v'},
-    {"attacker",    required_argument,  NULL, 'a'},
-    {"config",      required_argument,  NULL, 'c'},
-    {"output",      required_argument,  NULL, 'o'},
-    {"repeat",      required_argument,  NULL, 'r'},
-    {"invert",      no_argument,        NULL, 'i'},
-    {"delay",       required_argument,  NULL, 'd'},
-    {"serial",      no_argument,        NULL, 's'},
-    {"venv",        required_argument,  NULL, 0},
-    {"aenv",        required_argument,  NULL, 1},
-    {"vpar",        required_argument,  NULL, 2},
-    {"apar",        required_argument,  NULL, 3},
-    {"verbose",     no_argument,        NULL, 4},
+    {"help",            no_argument,        NULL, 'h'},
+    {"victim",          required_argument,  NULL, 'v'},
+    {"attacker",        required_argument,  NULL, 'a'},
+    {"config",          required_argument,  NULL, 'c'},
+    {"output",          required_argument,  NULL, 'o'},
+    {"repeat",          required_argument,  NULL, 'r'},
+    {"invert",          no_argument,        NULL, 'i'},
+    {"delay",           required_argument,  NULL, 'd'},
+    {"serial",          no_argument,        NULL, 's'},
+    {"monitor-only",    no_argument,        NULL, 'm'},
+    {"venv",            required_argument,  NULL, 0},
+    {"aenv",            required_argument,  NULL, 1},
+    {"vpar",            required_argument,  NULL, 2},
+    {"apar",            required_argument,  NULL, 3},
+    {"verbose",         no_argument,        NULL, 4},
     {0, 0, 0, 0}
 };
 
