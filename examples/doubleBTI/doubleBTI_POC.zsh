@@ -28,16 +28,16 @@ setopt +o nomatch
 rm -rf /tmp/doublebti_res/*
 
 echo -e "\e[33mRemoving previous generated attacker.out from tmp \e[39m"
-sudo rm -f /tmp/attacker.output
+rm -f /tmp/attacker.output
 
 for j ({0..19}) do
-    sudo $SPEC_I/speculator_mon -v $SPEC_I/tests/dblbti_victim/dblbti_victim        \
-                                -a $SPEC_I/tests/dblbti_attacker/dblbti_attacker    \
-                                -o $SPEC_I/results/speculator.output                \
-                                --vpar $j                                           \
-                                -r 100                                              \
-                                -c $SPEC_I/speculator.json                          \
-                                -q
+    $SPEC_I/speculator_mon  -v $SPEC_I/tests/dblbti_victim/dblbti_victim        \
+                            -a $SPEC_I/tests/dblbti_attacker/dblbti_attacker    \
+                            -o $SPEC_I/results/speculator.output                \
+                            --vpar $j                                           \
+                            -r 100                                              \
+                            -c $SPEC_I/speculator.json                          \
+                            -m
 
     for x ({0..256}); do
         cat /tmp/attacker.output | grep "^$x)" | cut -d " " -f 2 | awk '{if($1==$1+0 && $1<80)print $1}' | wc -l
@@ -47,5 +47,5 @@ for j ({0..19}) do
 
     cat /tmp/tmp.res | awk '{sum+=$2;} END{if (sum==0) printf("\033[31mX\033[0m ")}'
 
-    sudo rm /tmp/attacker.output
+    mv /tmp/attacker.output /tmp/doublebti_res/attacker_$j.output
 done
