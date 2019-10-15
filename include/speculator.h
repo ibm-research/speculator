@@ -60,7 +60,7 @@
                      "\t--vpar \t\tspecifies the parameters to pass to the victim (if any)\n" \
                      "\t--apar \t\tspecifies the parameters to pass to the attacker (if any)\n"\
                      "\t--serial/-s \tserialize the execution of attacker and victim\n" \
-                     "\t--quiet/-q \tenables quite mode\n" \
+                     "\t--verbose \tenables verbose mode\n" \
                      "\t--help/-h \tprints this message\n" \
 
 #define MSR_FORMAT "/dev/cpu/%ld/msr"
@@ -112,11 +112,11 @@ static int vflag = 0;     // FLAG victim path
 static int aflag = 0;     // FLAG used to detect victim/attacker mode
 static int cflag = 0;     // FLAG config file option
 static int oflag = 0;     // FLAG output file option
-static int qflag = 0;     // FLAG quite mode
 static int rflag = 0;     // FLAG repeat option
 static int iflag = 0;     // FLAG invert start of attack/victim
 static int dflag = 0;     // FLAG delay flag
 static int sflag = 0;     // FLAG serial execution of attack/victim
+static int verbflag = 0;  // FLAG verbose mode
 static int venvflag = 0;  // FLAG victim env var option
 static int aenvflag = 0;  // FLAG attacker env var option
 static int vparflag = 0;  // FLAG victim parameters
@@ -136,7 +136,6 @@ static struct option long_options[] = {
     {"attacker",    required_argument,  NULL, 'a'},
     {"config",      required_argument,  NULL, 'c'},
     {"output",      required_argument,  NULL, 'o'},
-    {"quiet",       no_argument,        NULL, 'q'},
     {"repeat",      required_argument,  NULL, 'r'},
     {"invert",      no_argument,        NULL, 'i'},
     {"delay",       required_argument,  NULL, 'd'},
@@ -145,6 +144,7 @@ static struct option long_options[] = {
     {"aenv",        required_argument,  NULL, 1},
     {"vpar",        required_argument,  NULL, 2},
     {"apar",        required_argument,  NULL, 3},
+    {"verbose",     no_argument,        NULL, 4},
     {0, 0, 0, 0}
 };
 

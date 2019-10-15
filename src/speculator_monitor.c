@@ -157,7 +157,7 @@ void dump_results(char *output_filename, int msr_fd, int is_attacker) {
 
         for (int i = 0; i < data->free; ++i) {
             data->count[i] = read_perf_event_counter(msr_fd, i);
-            if (!qflag) {
+            if (verbflag) {
                 printf ("######## %s:%s ##########\n", data->key[i], data->mask[i]);
                 debug_print ("Counter full: %s\n", data->config_str[i]);
                 debug_print ("Counter hex: %llx\n", data->config[i]);
@@ -294,9 +294,6 @@ main(int argc, char **argv) {
                 oflag = 1;
                 output_filename = optarg;
                 break;
-            case 'q':
-                qflag = 1;
-                break;
             case 'i':
                 iflag = 1;
                 break;
@@ -352,6 +349,9 @@ main(int argc, char **argv) {
                     optind++;
                     index++;
                 }
+                break;
+            case 4: //verbose
+                verbflag = 1;
                 break;
             case '?':
                 fprintf(stderr, "Unknown option %c\n", optopt);
