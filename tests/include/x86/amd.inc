@@ -14,8 +14,9 @@
 
 %macro reset_counter 0
     mov rax, SYS_GETUID
+    syscall
     cmp rax, 0
-    jne .skip
+    jne %%.skip
     mov rcx, 4
     %%.reset_pr_counters:
     push rcx
@@ -30,7 +31,7 @@
     syscall
     pop rcx
     loopnz %%.reset_pr_counters
-.skip:
+%%.skip:
 %endmacro
 
 %macro msr_seek 0
