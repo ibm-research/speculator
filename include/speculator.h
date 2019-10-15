@@ -57,6 +57,8 @@
                      "\t--invert/-i \tinverts the order of the threads start [default:attacker thread starts first]\n" \
                      "\t--venv \t\tspecifies the environment variable to pass to the victim (if any)\n" \
                      "\t--aenv \t\tspecifies the environment variable to pass to the attacker (if any)\n" \
+                     "\t--vpar \t\tspecifies the parameters to pass to the victim (if any)\n" \
+                     "\t--apar \t\tspecifies the parameters to pass to the attacker (if any)\n"\
                      "\t--serial/-s \tserialize the execution of attacker and victim\n" \
                      "\t--quiet/-q \tenables quite mode\n" \
                      "\t--help/-h \tprints this message\n" \
@@ -115,12 +117,17 @@ static int rflag = 0;     // FLAG repeat option
 static int iflag = 0;     // FLAG invert start of attack/victim
 static int dflag = 0;     // FLAG delay flag
 static int sflag = 0;     // FLAG serial execution of attack/victim
-static int venvflag = 0;  // FLAG venv option
-static int aenvflag = 0;  // FLAG aenv option
+static int venvflag = 0;  // FLAG victim env var option
+static int aenvflag = 0;  // FLAG attacker env var option
+static int vparflag = 0;  // FLAG victim parameters
+static int aparflag = 0;  // FLAG attacker parameters
 
 static int delay = 0;
 static char *victim_preload[100] = {NULL};
 static char *attacker_preload[100] = {NULL};
+
+static char *victim_parameters[100] = {NULL};
+static char *attacker_parameters[100] = {NULL};
 
 // Speculator commandline options
 static struct option long_options[] = {
@@ -136,6 +143,8 @@ static struct option long_options[] = {
     {"serial",      no_argument,        NULL, 's'},
     {"venv",        required_argument,  NULL, 0},
     {"aenv",        required_argument,  NULL, 1},
+    {"vpar",        required_argument,  NULL, 2},
+    {"apar",        required_argument,  NULL, 3},
     {0, 0, 0, 0}
 };
 

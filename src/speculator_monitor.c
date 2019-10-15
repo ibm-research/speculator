@@ -67,11 +67,14 @@ init_result_file(char *output_filename, int is_attacker) {
 }
 
 void
-start_process(char *filename, int core, sem_t *sem, char** env) {
+start_process(char *filename,
+              int core,
+              sem_t *sem,
+              char** env,
+              char **par) {
     int ret = -1;
     cpu_set_t set;
     struct sched_param param;
-    char *arr[] = {filename, NULL};
 
     CPU_ZERO(&set);
     CPU_SET(core, &set);
@@ -96,7 +99,7 @@ start_process(char *filename, int core, sem_t *sem, char** env) {
     sem_post(sem);
 
     /* HERE TRY TO START  OTHER PROCESS */
-    execve(filename, arr, env);
+    execve(filename, par, env);
 }
 
 void
@@ -330,6 +333,26 @@ main(int argc, char **argv) {
                     index++;
                 }
                 break;
+            case 2: //vpar
+                vparflag = 1;
+                index = 2;
+                victim_parameters[1] = optarg;
+                while (optind < argc && argv[optind][0] != '-') {
+                    victim_parameters[index] = argv[optind];
+                    optind++;
+                    index++;
+                }
+                break;
+            case 3: //apar
+                aparflag = 2;
+                index = 2;
+                attacker_parameters[1] = optarg;
+                while (optind < argc && argv[optind][0] != '-') {
+                    attacker_parameters[index] = argv[optind];
+                    optind++;
+                    index++;
+                }
+                break;
             case '?':
                 fprintf(stderr, "Unknown option %c\n", optopt);
                 usage_and_quit(argv);
@@ -344,6 +367,12 @@ main(int argc, char **argv) {
 
     if (hflag || !vflag) {
         usage_and_quit(argv);
+    }
+
+    victim_parameters[0] = victim_filename;
+
+    if (aflag) {
+        attacker_parameters[0] = attacker_filename;
     }
 
     if (!aflag && iflag) {
@@ -449,7 +478,7 @@ main(int argc, char **argv) {
 
         if(tmp_pid == 0) {
             debug_print("Starting dummy %s on victim core\n", DUMMY_NAME);
-            start_process (DUMMY_NAME, VICTIM_CORE, sem_victim, NULL);
+            start_process (DUMMY_NAME, VICTIM_CORE, sem_victim, NULL, NULL);
         }
         else {
             waitpid(tmp_pid, &status, 0);
@@ -460,7 +489,7 @@ main(int argc, char **argv) {
 
             if(tmp_pid == 0) {
                 debug_print("Starting dummy on attacker core\n");
-                start_process (DUMMY_NAME, ATTACKER_CORE, sem_attacker, NULL);
+                start_process (DUMMY_NAME, ATTACKER_CORE, sem_attacker, NULL, NULL);
             }
             else {
                 waitpid(tmp_pid, &status, 0);
@@ -481,7 +510,7 @@ main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
 
             if (attacker_pid == 0)
-                start_process(attacker_filename, ATTACKER_CORE, sem_attacker, attacker_preload);
+                start_process(attacker_filename, ATTACKER_CORE, sem_attacker, attacker_preload, attacker_parameters);
         }
 
         // STARTING VICTIM
@@ -491,7 +520,7 @@ main(int argc, char **argv) {
             exit(EXIT_FAILURE);
 
         if (victim_pid == 0)
-            start_process(victim_filename, VICTIM_CORE, sem_victim,  victim_preload);
+            start_process(victim_filename, VICTIM_CORE, sem_victim,  victim_preload, victim_parameters);
 
         start_monitor_inline(victim_pid, attacker_pid, output_filename,
                     output_filename_attacker, msr_fd_victim,
