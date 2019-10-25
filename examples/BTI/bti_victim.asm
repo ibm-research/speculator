@@ -18,6 +18,7 @@
     section .text
     global perf_test_entry:function
 
+; HIJACKED CALLED IN THE VICTIM
 bti_call:
     call [addr]
     ret
@@ -53,6 +54,7 @@ victim:
 lfence
 align 1024
 verify:
+    ; 1 LD_BLOCK.STORE_FORWARD markers
     mov DWORD[array], eax
     mov DWORD[array+4], edx
     movq xmm0, QWORD[array]
@@ -66,6 +68,7 @@ correct:
 
 align 1024
 verify2:
+    ; 3 LD_BLOCK.STORE_FORWARD markers
     mov DWORD[array], eax
     mov DWORD[array+4], edx
     movq xmm0, QWORD[array]
@@ -84,6 +87,7 @@ verify2:
 fillerteststart: resb (0x1 << 14)
 align 1024
 verify3:
+    ; 6 LD_BLOCK.STORE_FORWARD markers
     mov DWORD[array], eax
     mov DWORD[array+4], edx
     movq xmm0, QWORD[array]
