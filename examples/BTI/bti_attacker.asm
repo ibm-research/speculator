@@ -19,7 +19,7 @@
     section .text
     global perf_test_entry:function
 
-; FIRST BTI CALL TRAINED BY ATTACKER
+; INDIRECT CALL TRAINED BY ATTACKER
 bti_call:
     call [addr]
     ret

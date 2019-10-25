@@ -13,14 +13,23 @@
 ; limitations under the License.
 
 %macro msr_seek 0
+    mov rax, SYS_GETUID
+    syscall
+    cmp rax, 0
+    jne %%.skip
     mov rax, SYS_LSEEK
     mov rdi, [fd] ; fd
     mov rsi, 0x38F ; offset
     mov rdx, 0 ;SEEK_SET
     syscall
+%%.skip:
 %endmacro
 
 %macro reset_counter 0
+    mov rax, SYS_GETUID
+    syscall
+    cmp rax, 0
+    jne %%.skip
     mov rcx, 8
     %%.reset_pr_counters:
     push rcx
@@ -50,9 +59,14 @@
     syscall
     pop rcx
     loopnz %%.reset_fx_counters
+%%.skip:
 %endmacro
 
 %macro start_counter 0
+    mov rax, SYS_GETUID
+    syscall
+    cmp rax, 0
+    jne %%.skip
     mov rax, SYS_WRITE
     mov rdi, [fd] ; fd
     mov QWORD[val], 7 ; 15 | (7 << 32)
@@ -62,15 +76,21 @@
     mov rsi, val
     mov rdx, len ;len
     syscall
+%%.skip:
 %endmacro
 
 %macro stop_counter 0
+    mov rax, SYS_GETUID
+    syscall
+    cmp rax, 0
+    jne %%.skip
     mov rdi, [fd]
     mov rsi, val
     mov rdx, len
     mov rax, SYS_WRITE
     mov QWORD[val], 0
     syscall
+%%.skip:
 %endmacro
 
 %macro jmpnext 0
