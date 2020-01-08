@@ -10,6 +10,13 @@ For more examples please refer to [here](https://github.com/ibm-research/specula
 
 For more infomation please refer to the [wiki](https://github.com/ibm-research/speculator/wiki).
 
+## Branches
+`develop`: contains the lastest version of Speculator (which might be not fully functional)
+
+`master`: it is the stable branch where the releases will be published
+
+`others`: the other branches represent currently developed features
+
 ## Publications
 * [1] A. Mambretti, A. Sandulescu, M. Neugschwandtner, A. Sorniotti, A. Kurmus
       Two Methods for Exploiting Speculative Control Flow Hijacks.
