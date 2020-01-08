@@ -3,9 +3,21 @@
 Tool to Analyze Speculative Execution Attacks and Mitigations
 
 ## QuickStart
-Hereafter you can find information on how to build and use
-speculator. For more infomation please refer to the [wiki](https://github.com/ibm-research/speculator/wiki).
+A quickstart guide can be found [here](https://github.com/ibm-research/speculator/wiki/Quick_Start).
+In the guide, you can find information and commands on how to build and use speculator.
 
+For more examples please refer to [here](https://github.com/ibm-research/speculator/wiki/Examples)
+
+For more infomation please refer to the [wiki](https://github.com/ibm-research/speculator/wiki).
+
+## Publications
+* [1] A. Mambretti, A. Sandulescu, M. Neugschwandtner, A. Sorniotti, A. Kurmus
+      Two Methods for Exploiting Speculative Control Flow Hijacks.
+      13th USENIX Workshop on Offensive Technologies (WOOT), Santa Clara, CA, USA, August 2019
+
+* [2] A. Mambretti, M. Neugschwandtner, A. Sorniotti, E. Kirda, W. Robertson, A. Kurmus
+      Speculator: A Tool to Analyze Speculative Execution Attacks and Mitigations 
+      35th Annual Computer Security Applications Conference (ACSAC), San Juan, Puerto Rico, December 2019
 
 ### Git flow
 This repository follows the [git-flow][git-flow] branching model. Make sure to read and
