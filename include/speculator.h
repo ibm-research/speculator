@@ -182,6 +182,24 @@ recursive_mkdir(char *path) {
     return;
 }
 
+char *
+get_complete_path(char* path, char *filename) {
+    char *buffer;
+    if (filename[0] == '/') { // is filename already absolute?
+        debug_print("Absolute path detected\n");
+        buffer = (char *) malloc (strlen(filename) + 2);
+        strcpy(buffer, filename);
+        return buffer;
+    }
+    else {
+        debug_print("Relative path detected\n");
+        buffer = (char *) malloc(strlen(path) + strlen(filename) + 2);
+        strcpy(buffer, path);
+        strcat(buffer, "/");
+        return strcat(buffer, filename);
+    }
+}
+
 void
 decode_events() {
     int ret = 0;

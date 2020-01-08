@@ -242,9 +242,12 @@ main(int argc, char **argv) {
     int index = 0;
     int option_index = 0;
     pid_t victim_pid = 0;
+    char *env_home = NULL;
     int msr_fd_victim = 0;
+    char *env_build = NULL;
     pid_t attacker_pid = 0;
     int msr_fd_attacker = 0;
+    char *env_install = NULL;
     int repeat = DEFAULT_REPEAT;
     char *config_filename = NULL;
     char *output_filename = NULL;
@@ -254,6 +257,24 @@ main(int argc, char **argv) {
     char *attacker_filename = NULL;
     char *output_filename_attacker = NULL;
 
+    // retrive environment variables (if any)
+    env_home = getenv("SPEC_H");
+    if (env_home == NULL)
+        debug_print("WARNING: SPEC_H not set\n");
+    else
+        debug_print("SPEC_H set to %s", env_home);
+
+    env_build = getenv("SPEC_B");
+    if (env_build == NULL)
+        debug_print("WARNING: SPEC_B not set\n");
+    else
+        debug_print("SPEC_B set to %s", env_build);
+
+    env_install = getenv("SPEC_I");
+    if (env_install == NULL)
+        debug_print("WARNING: SPEC_I not set\n");
+    else
+        debug_print("SPEC_I set to %s", env_install);
 
 #ifdef INTEL
     debug_print("CPU: Intel detected\n");
@@ -283,15 +304,15 @@ main(int argc, char **argv) {
                 break;
             case 'v':
                 vflag = 1;
-                victim_filename = optarg;
+                victim_filename = get_complete_path(env_install, optarg);
                 break;
             case 'a':
                 aflag = 1;
-                attacker_filename = optarg;
+                attacker_filename = get_complete_path(env_install, optarg);
                 break;
             case 'c':
                 cflag = 1;
-                config_filename = optarg;
+                config_filename = get_complete_path(env_install, optarg);
                 break;
             case 'r':
                 rflag = 1;
@@ -299,7 +320,7 @@ main(int argc, char **argv) {
                 break;
             case 'o':
                 oflag = 1;
-                output_filename = optarg;
+                output_filename = get_complete_path(env_install, optarg);
                 break;
             case 'i':
                 iflag = 1;
@@ -412,11 +433,11 @@ main(int argc, char **argv) {
     }
 
     if (!cflag) {
-        config_filename = DEFAULT_CONF_NAME;
+        config_filename = get_complete_path(env_install, DEFAULT_CONF_NAME);
     }
 
     if (!oflag) {
-        output_filename = DEFAULT_OUTPUT_NAME;
+        output_filename = get_complete_path(env_install, DEFAULT_OUTPUT_NAME);
     }
 
     if (aflag) {
@@ -439,6 +460,7 @@ main(int argc, char **argv) {
         init_result_file(output_filename, 0);
 
         if (aflag) {
+            //TODO change from FILENAME_LENGTH to strlen(output_filename)
             output_filename_attacker = (char *) malloc(sizeof(char) * FILENAME_LENGTH);
             snprintf (output_filename_attacker, FILENAME_LENGTH+1, "%s.attacker", output_filename);
             init_result_file(output_filename_attacker, 1);
@@ -568,6 +590,11 @@ main(int argc, char **argv) {
         close(msr_fd_attacker);
         free(output_filename_attacker);
     }
+
+    free(victim_filename);
+    free(config_filename);
+    free(output_filename);
+    free(attacker_filename);
 
     sem_destroy(sem_victim);
     sem_destroy(sem_attacker);
