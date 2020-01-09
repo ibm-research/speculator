@@ -20,8 +20,11 @@
 
 #include <config.h>
 
+#include <pwd.h>
+#include <grp.h>
 #include <getopt.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <semaphore.h>
 #include <json-c/json.h>
 #include <perfmon/pfmlib.h>
@@ -165,6 +168,45 @@ attacker_data = {{NULL}, {NULL}, {NULL}, {NULL},
         {0}, {0}, {0}, 0, 0};
 
 void
+update_file_owner(char *filename) {
+    uid_t uid;
+    gid_t gid;
+    char *user_name;
+    struct group *grp;
+    struct passwd *pwd;
+
+    // Change files iinformation
+    user_name = getenv("SUDO_USER");
+    if (user_name == NULL) {
+        debug_print("Speculator is not running under sudo\n");
+        return;
+    }
+    else {
+        pwd = getpwnam(user_name);
+
+        if (pwd == NULL) {
+            debug_print("Impossible to get passwd entry\n");
+            return;
+        }
+        uid = pwd->pw_uid;
+
+        grp = getgrnam(user_name);
+
+        if (grp == NULL) {
+            debug_print("Impossible to get group entry\n");
+            return;
+        }
+
+        gid = pwd->pw_gid;
+
+        if (chown(filename, uid, gid) == -1) {
+            debug_print("Impossible to change owner of the file\n");
+        }
+        return;
+    }
+}
+
+void
 recursive_mkdir(char *path) {
     char *tmp_path = NULL;
     char *tmp_dir = NULL;
@@ -175,11 +217,33 @@ recursive_mkdir(char *path) {
     if (access(tmp_dir, F_OK) != -1) return;
 
     recursive_mkdir(tmp_dir);
+
     if (mkdir (tmp_dir, 0755) == -1) {
         fprintf(stderr, "Error: Impossible to create the new folder at this time.");
         exit(EXIT_FAILURE);
     }
+
+    update_file_owner(tmp_dir);
+
     return;
+}
+
+char *
+get_complete_path(char *path, char *filename) {
+    char *buffer;
+    if (filename[0] == '/') { // is filename already absolute?
+        debug_print("Absolute path detected\n");
+        buffer = (char *) malloc (strlen(filename) + 2);
+        strcpy(buffer, filename);
+        return buffer;
+    }
+    else {
+        debug_print("Relative path detected\n");
+        buffer = (char *) malloc(strlen(path) + strlen(filename) + 2);
+        strcpy(buffer, path);
+        strcat(buffer, "/");
+        return strcat(buffer, filename);
+    }
 }
 
 void
