@@ -168,42 +168,6 @@ attacker_data = {{NULL}, {NULL}, {NULL}, {NULL},
         {0}, {0}, {0}, 0, 0};
 
 void
-recursive_mkdir(char *path) {
-    char *tmp_path = NULL;
-    char *tmp_dir = NULL;
-
-    tmp_path = strdup(path);
-    tmp_dir = dirname(tmp_path);
-
-    if (access(tmp_dir, F_OK) != -1) return;
-
-    recursive_mkdir(tmp_dir);
-    if (mkdir (tmp_dir, 0755) == -1) {
-        fprintf(stderr, "Error: Impossible to create the new folder at this time.");
-        exit(EXIT_FAILURE);
-    }
-    return;
-}
-
-char *
-get_complete_path(char *path, char *filename) {
-    char *buffer;
-    if (filename[0] == '/') { // is filename already absolute?
-        debug_print("Absolute path detected\n");
-        buffer = (char *) malloc (strlen(filename) + 2);
-        strcpy(buffer, filename);
-        return buffer;
-    }
-    else {
-        debug_print("Relative path detected\n");
-        buffer = (char *) malloc(strlen(path) + strlen(filename) + 2);
-        strcpy(buffer, path);
-        strcat(buffer, "/");
-        return strcat(buffer, filename);
-    }
-}
-
-void
 update_file_owner(char *filename) {
     uid_t uid;
     gid_t gid;
@@ -239,6 +203,46 @@ update_file_owner(char *filename) {
             debug_print("Impossible to change owner of the file\n");
         }
         return;
+    }
+}
+
+void
+recursive_mkdir(char *path) {
+    char *tmp_path = NULL;
+    char *tmp_dir = NULL;
+
+    tmp_path = strdup(path);
+    tmp_dir = dirname(tmp_path);
+
+    if (access(tmp_dir, F_OK) != -1) return;
+
+    recursive_mkdir(tmp_dir);
+
+    if (mkdir (tmp_dir, 0755) == -1) {
+        fprintf(stderr, "Error: Impossible to create the new folder at this time.");
+        exit(EXIT_FAILURE);
+    }
+
+    update_file_owner(tmp_dir);
+
+    return;
+}
+
+char *
+get_complete_path(char *path, char *filename) {
+    char *buffer;
+    if (filename[0] == '/') { // is filename already absolute?
+        debug_print("Absolute path detected\n");
+        buffer = (char *) malloc (strlen(filename) + 2);
+        strcpy(buffer, filename);
+        return buffer;
+    }
+    else {
+        debug_print("Relative path detected\n");
+        buffer = (char *) malloc(strlen(path) + strlen(filename) + 2);
+        strcpy(buffer, path);
+        strcat(buffer, "/");
+        return strcat(buffer, filename);
     }
 }
 
