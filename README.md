@@ -18,12 +18,12 @@ For more infomation please refer to the [wiki](https://github.com/ibm-research/s
 `others`: the other branches represent currently developed features
 
 ## Publications
-* [1] A. Mambretti, A. Sandulescu, M. Neugschwandtner, A. Sorniotti, A. Kurmus
-      Two Methods for Exploiting Speculative Control Flow Hijacks.
+* [1] A. Mambretti, A. Sandulescu, M. Neugschwandtner, A. Sorniotti, A. Kurmus \\
+      Two Methods for Exploiting Speculative Control Flow Hijacks. \\
       13th USENIX Workshop on Offensive Technologies (WOOT), Santa Clara, CA, USA, August 2019
 
-* [2] A. Mambretti, M. Neugschwandtner, A. Sorniotti, E. Kirda, W. Robertson, A. Kurmus
-      Speculator: A Tool to Analyze Speculative Execution Attacks and Mitigations 
+* [2] A. Mambretti, M. Neugschwandtner, A. Sorniotti, E. Kirda, W. Robertson, A. Kurmus\\
+      Speculator: A Tool to Analyze Speculative Execution Attacks and Mitigations \\
       35th Annual Computer Security Applications Conference (ACSAC), San Juan, Puerto Rico, December 2019
 
 ### Git flow
