@@ -144,34 +144,34 @@ void dump_results(char *output_filename, int msr_fd, int is_attacker) {
 
     fp = fopen (output_filename, "a+");
 
-        if (fp == NULL) {
-            fprintf(stderr, "Impossible to open the outputfile %s\n", output_filename);
-            exit(EXIT_FAILURE);
-        }
+    if (fp == NULL) {
+        fprintf(stderr, "Impossible to open the outputfile %s\n", output_filename);
+        exit(EXIT_FAILURE);
+    }
 
 #ifdef INTEL
-        for (int i = 0; i < 3; ++i) {
-            data->count_fixed[i] = read_IA32_FIXED_CTRi(msr_fd, i);
-            fprintf(fp, "%lld|", data->count_fixed[i]);
-        }
+    for (int i = 0; i < 3; ++i) {
+        data->count_fixed[i] = read_IA32_FIXED_CTRi(msr_fd, i);
+        fprintf(fp, "%lld|", data->count_fixed[i]);
+    }
 #endif // INTEL
 
-        for (int i = 0; i < data->free; ++i) {
-            data->count[i] = read_perf_event_counter(msr_fd, i);
-            if (verbflag) {
-                printf ("######## %s:%s ##########\n", data->key[i], data->mask[i]);
-                debug_print ("Counter full: %s\n", data->config_str[i]);
-                debug_print ("Counter hex: %llx\n", data->config[i]);
-                debug_print ("Desc: %s\n", data->desc[i]);
-                printf ("Result: %lld\n", data->count[i]);
-                debug_print ("-----------------\n");
-            }
-            fprintf(fp, "%lld|", data->count[i]);
+    for (int i = 0; i < data->free; ++i) {
+        data->count[i] = read_perf_event_counter(msr_fd, i);
+        if (verbflag) {
+            printf ("######## %s:%s ##########\n", data->key[i], data->mask[i]);
+            debug_print ("Counter full: %s\n", data->config_str[i]);
+            debug_print ("Counter hex: %llx\n", data->config[i]);
+            debug_print ("Desc: %s\n", data->desc[i]);
+            printf ("Result: %lld\n", data->count[i]);
+            debug_print ("-----------------\n");
         }
+        fprintf(fp, "%lld|", data->count[i]);
+    }
 
-        fprintf(fp, "\n");
+    fprintf(fp, "\n");
 
-        fclose(fp);
+    fclose(fp);
 }
 
 void
@@ -560,7 +560,13 @@ main(int argc, char **argv) {
                     msr_fd_attacker);
     }
 
-    //clean-up
+    if (!mflag) { // Skip change ownership if in monitor-only mode
+        update_file_owner(output_filename);
+        if (aflag)
+            update_file_owner(output_filename_attacker);
+    }
+
+    //clean-up victim
     for (int i = 0; i < victim_data.free; ++i) {
         free(victim_data.desc[i]);
         free(victim_data.key[i]);
@@ -568,6 +574,7 @@ main(int argc, char **argv) {
         free(victim_data.config_str[i]);
     }
 
+    //clean-up attacker
     for (int i = 0; i < attacker_data.free; ++i) {
         free(attacker_data.desc[i]);
         free(attacker_data.key[i]);
@@ -576,7 +583,7 @@ main(int argc, char **argv) {
     }
 
 #ifdef INTEL
-    if (!mflag) { // Skip re-enabling if monitor-only mode
+    if (!mflag) { // Skip re-enabling if in monitor-only mode
         // RE-ENABLE ALL COUNTERS
         write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_victim, 15ull | (7ull << 32));
         if (aflag)
