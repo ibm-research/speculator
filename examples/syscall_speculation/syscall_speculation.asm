@@ -14,7 +14,7 @@
 
 [BITS 64]
     %include "common.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     %define SYS_GETPPID 110
     %define SYS_GETPID 39

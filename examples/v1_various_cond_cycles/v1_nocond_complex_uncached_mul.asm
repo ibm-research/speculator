@@ -14,7 +14,7 @@
 
 [BITS 64]
     %include "common.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     section .data
     warmup_cnt: db 1

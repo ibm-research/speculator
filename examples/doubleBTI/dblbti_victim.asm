@@ -14,7 +14,7 @@
 
 [BITS 64]
     %include "common.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     %define BASE 0x10000000
 

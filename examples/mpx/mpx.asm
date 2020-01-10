@@ -15,7 +15,7 @@ i; Copyright 2019 IBM Corporation
 [BITS 64]
     %include "common.inc"
     %include "signals.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     %macro setup_mpx 0
         ; read cpu state first

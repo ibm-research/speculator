@@ -32,7 +32,7 @@
 
     %include "signals.inc"
     %include "common.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     ; clobbers rax, rdi, rsi, rdx, r8-10
     ; params: address + length

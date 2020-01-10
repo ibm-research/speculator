@@ -27,7 +27,7 @@
     %define BASE 0x10000000
 
     %include "common.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     section .data
 

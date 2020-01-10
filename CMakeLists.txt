@@ -52,7 +52,7 @@ IF (${VENDOR} STREQUAL "AuthenticAMD")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/include/x86/amd.inc
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/amd.inc
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/pmc.inc
         )
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink
@@ -70,7 +70,7 @@ ELSEIF (${VENDOR} STREQUAL "GenuineIntel")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/include/x86/intel.inc
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/intel.inc
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/pmc.inc
         )
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink
