@@ -8,12 +8,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - name: source
-              run: source speculator.env
             - name: configure
-              run: source speculator.env && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
-            - name: build
-              run: spec_build_make
-            - name:
-              run: spec_install
+              run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
+              env:
+                  SPEC_H=./
+                  SPEC_B=./build
+                  SPEC_I=./install
 
