@@ -11,7 +11,7 @@ jobs:
             - name: source
               run: source speculator.env
             - name: configure
-              run: spec_configure
+              run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
             - name: build
               run: spec_build_make
             - name:
