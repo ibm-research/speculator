@@ -11,7 +11,7 @@ jobs:
             - name: configure
               run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
               env:
-                  SPEC_H=./
-                  SPEC_B=./build
-                  SPEC_I=./install
+                  SPEC_H: ./
+                  SPEC_B: ./build
+                  SPEC_I: ./install
 
