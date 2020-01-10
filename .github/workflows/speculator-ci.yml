@@ -8,6 +8,8 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+            - name: dependencies
+              run: sudo apt install cmake gcc g++ clang libjson-c-dev libpfm4-dev ninja-build python-sqlalchemy cmake nasm
             - name: configure
               run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
               env:
