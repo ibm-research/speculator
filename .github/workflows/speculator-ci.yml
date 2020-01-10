@@ -22,7 +22,9 @@ jobs:
                   SPEC_I: ./install
             - name: compile
               run: ninja -C $SPEC_B
-              SPEC_B: ./build
+              env:
+                  SPEC_B: ./build
             - name: install
               run: ninja -C $SPEC_B install
-              SPEC_B: ./build
+              env:
+                  SPEC_B: ./build
