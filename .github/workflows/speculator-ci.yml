@@ -1,0 +1,18 @@
+name: Speculator CI
+
+on: [push]
+
+jobs:
+    build:
+        name: compile-speculator
+        runs-on: ubuntu-latest
+        steps:
+            - name: source
+              run: source speculator.env
+            - name: configure
+              run: spec_configure
+            - name: build
+              run: spec_build_make
+            - name:
+              run: spec_install
+
