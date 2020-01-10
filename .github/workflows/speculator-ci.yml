@@ -1,0 +1,30 @@
+name: Speculator CI
+
+on: [push]
+
+jobs:
+    build:
+        name: compile-speculator
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-16.04, ubuntu-18.04, ubuntu-latest]
+                compiler: [gcc, clang]
+        steps:
+            - uses: actions/checkout@v2
+            - name: dependencies
+              run: sudo apt install cmake gcc g++ clang libjson-c-dev libpfm4-dev ninja-build python-sqlalchemy cmake nasm
+            - name: configure
+              run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
+              env:
+                  SPEC_H: ./
+                  SPEC_B: ./build
+                  SPEC_I: ./install
+            - name: compile
+              run: ninja -C $SPEC_B
+              env:
+                  SPEC_B: ./build
+            - name: install
+              run: ninja -C $SPEC_B install
+              env:
+                  SPEC_B: ./build
