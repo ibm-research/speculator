@@ -1,4 +1,4 @@
-![](https://github.com/ibm-research/speculator/workflows/.github/workflows/speculator-ci.yml/badge.svg)
+[![Actions Status](https://github.com/ibm-research/speculator/workflows/Speculator%20CI/badge.svg)](https://github.com/ibm-research/speculator/actions)
 # Speculator
 
 Tool to Analyze Speculative Execution Attacks and Mitigations
