@@ -7,7 +7,7 @@ jobs:
         name: compile-speculator
         runs-on: ubuntu-latest
         steps:
-            - uses: ibm-research/speculator@feature/mbr/github_actions
+            - uses: actions/checkout@v2
             - name: source
               run: source speculator.env
             - name: configure
