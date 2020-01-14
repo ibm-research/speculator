@@ -12,19 +12,30 @@ jobs:
                 compiler: [gcc, clang]
         steps:
             - uses: actions/checkout@v2
+
             - name: dependencies
               run: sudo apt install cmake gcc g++ clang libjson-c-dev libpfm4-dev ninja-build python-sqlalchemy cmake nasm
+
             - name: configure
               run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
               env:
                   SPEC_H: ./
                   SPEC_B: ./build
                   SPEC_I: ./install
+
             - name: compile
               run: ninja -C $SPEC_B
               env:
                   SPEC_B: ./build
+
             - name: install
               run: ninja -C $SPEC_B install
               env:
                   SPEC_B: ./build
+
+            - name: Return Stack Buffer example
+              run: $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/rsb_deep_stack $SPEC_H/examples/rsb/rsb_fill_deep_stack.json $SPEC_H/examples/rsb/rsb_fill_deep_stack.asm && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && rm -rf $SPEC_H/tests/rsb_deep_stack && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              env:
+                  SPEC_H: ./
+                  SPEC_B: ./build
+                  SPEC_I: ./install
