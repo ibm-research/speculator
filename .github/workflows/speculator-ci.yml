@@ -14,7 +14,7 @@ jobs:
             - uses: actions/checkout@v2
 
             - name: dependencies
-              run: sudo apt install cmake gcc g++ clang libjson-c-dev libpfm4-dev ninja-build python-sqlalchemy cmake nasm
+              run: sudo apt install cmake gcc g++ clang libjson-c-dev libpfm4-dev ninja-build python-sqlalchemy cmake nasm python-numpy
 
             - name: configure
               run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
@@ -34,7 +34,7 @@ jobs:
                   SPEC_B: ./build
 
             - name: Return Stack Buffer example
-              run: $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/rsb_deep_stack $SPEC_H/examples/rsb/rsb_fill_deep_stack.json $SPEC_H/examples/rsb/rsb_fill_deep_stack.asm && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && sudo $SPEC_H/scripts/run_test.py $SPEC_I -r 1 -c && $SPEC_H/scripts/post-processing.py -l $SPEC_I/results && cat $SPEC_I/results/final_report.txt && rm -rf $SPEC_H/tests/rsb_deep_stack && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              run: $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/rsb_deep_stack $SPEC_H/examples/rsb/rsb_fill_deep_stack.json $SPEC_H/examples/rsb/rsb_fill_deep_stack.asm && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && sudo --preserve-env=SPEC_I --preserve-env=SPEC_B --preserve-env=SPEC_H $SPEC_H/scripts/run_test.py $SPEC_I -r 1 -c && $SPEC_H/scripts/post-processing.py -l $SPEC_I/results && cat $SPEC_I/results/final_results.txt && rm -rf $SPEC_H/tests/rsb_deep_stack && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
               env:
                   SPEC_H: ./
                   SPEC_B: ./build
