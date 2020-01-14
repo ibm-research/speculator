@@ -39,3 +39,12 @@ jobs:
                   SPEC_H: ./
                   SPEC_B: ./build
                   SPEC_I: ./install
+
+            - name: Speculation of Nested Branches example
+                   ln -s $SPEC_H/examples/speculation_in_speculation/speculation_in_speculation_in_speculation.asm $SPEC_H/tests
+              run: cp $SPEC_H/examples/speculation_in_speculation/speculation_in_speculation_in_speculation.asm $SPEC_H/tests && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && rm -rf $SPEC_H/tests/speculation_in_speculation_in_speculation.asm && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              env:
+                  SPEC_H: ./
+                  SPEC_B: ./build
+                  SPEC_I: ./install
+
