@@ -53,3 +53,12 @@ jobs:
                   SPEC_H: ./
                   SPEC_B: ./build
                   SPEC_I: ./install
+
+            - name: Flushing the Cache example
+              run: cp $SPEC_H/examples/clflush_in_speculation/clflush_in_speculation_cached.asm $SPEC_H/tests/ && cp $SPEC_H/examples/clflush_in_speculation/clflush_in_speculation_uncached.asm $SPEC_H/tests/  && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && rm -rf $SPEC_H/tests/clflush_in_speculation_cached.asm $SPEC_H/tests/clflush_in_speculation/clflush_in_speculation_uncached.asm && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              env:
+                  SPEC_H: ./
+                  SPEC_B: ./build
+                  SPEC_I: ./install
+
+
