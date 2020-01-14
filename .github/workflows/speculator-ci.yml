@@ -48,7 +48,7 @@ jobs:
                   SPEC_I: ./install
 
             - name: Speculative Execution Across System Calls example
-              run: cp $SPEC_H/examples/syscall_speculation/syscall_speculation_baseline.asm $SPEC_H/tests && $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/syscall_speculation $SPEC_H/examples/syscall_speculation/syscall_speculation.json $SPEC_H/examples/syscall_speculation/syscall_speculation.asm && cp $SPEC_H/examples/speculation_in_speculation/speculation_in_speculation_in_speculation.asm $SPEC_H/tests && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && rm -rf $SPEC_H/tests/syscall_speculation && rm -rf $SPEC_H/tests/syscall_speculation_baseline.asm && rm -rf $SPEC_H/tests/ && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              run: cp $SPEC_H/examples/syscall_speculation/syscall_speculation_baseline.asm $SPEC_H/tests && $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/syscall_speculation $SPEC_H/examples/syscall_speculation/syscall_speculation.json $SPEC_H/examples/syscall_speculation/syscall_speculation.asm && cp $SPEC_H/examples/speculation_in_speculation/speculation_in_speculation_in_speculation.asm $SPEC_H/tests && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && rm -rf $SPEC_H/tests/syscall_speculation && rm -rf $SPEC_H/tests/syscall_speculation_baseline.asm && rm -rf $SPEC_H/tests/*.asm && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
               env:
                   SPEC_H: ./
                   SPEC_B: ./build
@@ -60,5 +60,13 @@ jobs:
                   SPEC_H: ./
                   SPEC_B: ./build
                   SPEC_I: ./install
+
+            - name: Speculation Window Size
+              run: cp $SPEC_H/examples/v1_various_cond_cycles/*.asm $SPEC_H/tests/ && cp $SPEC_H/examples/v2_various_uncond_cycles/*.asm $SPEC_H/tests/ &&  $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/v4_cycles $SPEC_H/examples/v4_cycles/v4_cycles.json $SPEC_H/examples/v4_cycles/v4_cycles.asm && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && rm -rf $SPEC_H/tests/*.asm $SPEC_H/tests/v4_cycles && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              env:
+                  SPEC_H: ./
+                  SPEC_B: ./build
+                  SPEC_I: ./install
+
 
 
