@@ -238,6 +238,11 @@ get_complete_path(char *path, char *filename) {
         return buffer;
     }
     else {
+        if (path == NULL) { //in case a path has to stay relative
+            buffer = (char *) malloc(strlen(filename) + 2);
+            strcpy(buffer, filename);
+            return buffer;
+        }
         debug_print("Relative path detected\n");
         buffer = (char *) malloc(strlen(path) + strlen(filename) + 2);
         strcpy(buffer, path);
