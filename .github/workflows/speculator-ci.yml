@@ -33,8 +33,11 @@ jobs:
               env:
                   SPEC_B: ./build
 
+            - name: load_msr
+              run: sudo modprobe msr
+
             - name: Return Stack Buffer example
-              run: $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/rsb_deep_stack $SPEC_H/examples/rsb/rsb_fill_deep_stack.json $SPEC_H/examples/rsb/rsb_fill_deep_stack.asm && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && rm -rf $SPEC_H/tests/rsb_deep_stack && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              run: $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/rsb_deep_stack $SPEC_H/examples/rsb/rsb_fill_deep_stack.json $SPEC_H/examples/rsb/rsb_fill_deep_stack.asm && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && sudo $SPEC_H/scripts/run_test.py $SPEC_I -r 1 -c && rm -rf $SPEC_H/tests/rsb_deep_stack && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
               env:
                   SPEC_H: ./
                   SPEC_B: ./build
