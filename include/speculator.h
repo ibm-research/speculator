@@ -231,7 +231,7 @@ recursive_mkdir(char *path) {
 char *
 get_complete_path(char *path, char *filename) {
     char *buffer;
-    if (filename[0] == '/') { // is filename already absolute?
+    if (filename[0] == '/' || filename[0] == '.') { // is filename already absolute?
         debug_print("Absolute path detected\n");
         buffer = (char *) malloc (strlen(filename) + 2);
         strcpy(buffer, filename);
