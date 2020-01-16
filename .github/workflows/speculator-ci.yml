@@ -14,7 +14,7 @@ jobs:
             - uses: actions/checkout@v2
 
             - name: dependencies
-              run: sudo apt install cmake gcc g++ clang libjson-c-dev libpfm4-dev ninja-build python-sqlalchemy cmake nasm python-numpy zsh
+              run: sudo apt install cmake gcc g++ clang libjson-c-dev libpfm4-dev ninja-build python-sqlalchemy cmake nasm python-numpy
 
             - name: configure
               run: cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja"
@@ -94,13 +94,6 @@ jobs:
 
             - name: Issued vs Executed uops example
               run: $SPEC_H/scripts/cr_inc_snip.py --output $SPEC_H/tests/corr_slow_lea $SPEC_H/examples/corr_issued_and_exec/corr_issued_and_exec.json $SPEC_H/examples/corr_issued_and_exec/corr_issued_and_exec_slow_lea.asm && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && sudo $SPEC_H/scripts/run_test.py $SPEC_I -r 1 -c  && rm -rf $SPEC_H/tests/corr_slow_lea && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
-              env:
-                  SPEC_H: ./
-                  SPEC_B: ./build
-                  SPEC_I: ./install
-
-            - name: DoubleBTI attack example
-              run: cp $SPEC_H/examples/doubleBTI/dbl* $SPEC_H/tests/ && cmake $SPEC_H -B$SPEC_B -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SPEC_I -G "Ninja" && ninja -C $SPEC_B install && zsh $SPEC_H/examples/doubleBTI/doubleBTI_POC.zsh
               env:
                   SPEC_H: ./
                   SPEC_B: ./build
