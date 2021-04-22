@@ -1,4 +1,4 @@
-// Copyright 2019 IBM Corporation
+// Copyright 2021 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,36 +67,40 @@ init_result_file(char *output_filename, int is_attacker) {
 }
 
 void
-start_process(char *filename, int core, sem_t *sem, char** env) {
+start_process(char *filename,
+              int core,
+              sem_t *sem,
+              char** env,
+              char **par) {
     int ret = -1;
     cpu_set_t set;
     struct sched_param param;
-    char *arr[] = {filename, NULL};
 
     CPU_ZERO(&set);
     CPU_SET(core, &set);
     sched_setaffinity(getpid(), sizeof(cpu_set_t), &set);
 
-    ret = setpriority(PRIO_PROCESS, 0, -20);
+    if (!mflag) {
+        ret = setpriority(PRIO_PROCESS, 0, -20);
 
-    if (ret != 0) {
-        fprintf (stderr, "Impossible set priority to child\n");
-        exit(EXIT_FAILURE);
+        if (ret != 0) {
+            fprintf (stderr, "Impossible set priority to child\n");
+            exit(EXIT_FAILURE);
+        }
+
+        param.sched_priority = 99;
+        ret = sched_setscheduler(0, SCHED_RR, &param);
+
+        if (ret != 0) {
+            fprintf (stderr, "Impossible set scheduler RR proprity\n");
+            exit(EXIT_FAILURE);
+        }
     }
-
-    param.sched_priority = 99;
-    ret = sched_setscheduler(0, SCHED_RR, &param);
-
-    if (ret != 0) {
-        fprintf (stderr, "Impossible set scheduler RR proprity\n");
-        exit(EXIT_FAILURE);
-    }
-
     sem_wait(sem);
     sem_post(sem);
 
     /* HERE TRY TO START  OTHER PROCESS */
-    execve(filename, arr, env);
+    execve(filename, par, env);
 }
 
 void
@@ -140,34 +144,34 @@ void dump_results(char *output_filename, int msr_fd, int is_attacker) {
 
     fp = fopen (output_filename, "a+");
 
-        if (fp == NULL) {
-            fprintf(stderr, "Impossible to open the outputfile %s\n", output_filename);
-            exit(EXIT_FAILURE);
-        }
+    if (fp == NULL) {
+        fprintf(stderr, "Impossible to open the outputfile %s\n", output_filename);
+        exit(EXIT_FAILURE);
+    }
 
 #ifdef INTEL
-        for (int i = 0; i < 3; ++i) {
-            data->count_fixed[i] = read_IA32_FIXED_CTRi(msr_fd, i);
-            fprintf(fp, "%lld|", data->count_fixed[i]);
-        }
+    for (int i = 0; i < 3; ++i) {
+        data->count_fixed[i] = read_IA32_FIXED_CTRi(msr_fd, i);
+        fprintf(fp, "%lld|", data->count_fixed[i]);
+    }
 #endif // INTEL
 
-        for (int i = 0; i < data->free; ++i) {
-            data->count[i] = read_perf_event_counter(msr_fd, i);
-            if (!qflag) {
-                printf ("######## %s:%s ##########\n", data->key[i], data->mask[i]);
-                debug_print ("Counter full: %s\n", data->config_str[i]);
-                debug_print ("Counter hex: %llx\n", data->config[i]);
-                debug_print ("Desc: %s\n", data->desc[i]);
-                printf ("Result: %lld\n", data->count[i]);
-                debug_print ("-----------------\n");
-            }
-            fprintf(fp, "%lld|", data->count[i]);
+    for (int i = 0; i < data->free; ++i) {
+        data->count[i] = read_perf_event_counter(msr_fd, i);
+        if (verbflag) {
+            printf ("######## %s:%s ##########\n", data->key[i], data->mask[i]);
+            debug_print ("Counter full: %s\n", data->config_str[i]);
+            debug_print ("Counter hex: %llx\n", data->config[i]);
+            debug_print ("Desc: %s\n", data->desc[i]);
+            printf ("Result: %lld\n", data->count[i]);
+            debug_print ("-----------------\n");
         }
+        fprintf(fp, "%lld|", data->count[i]);
+    }
 
-        fprintf(fp, "\n");
+    fprintf(fp, "\n");
 
-        fclose(fp);
+    fclose(fp);
 }
 
 void
@@ -179,9 +183,11 @@ start_monitor_inline(int victim_pid,
                      int msr_fd_attacker) {
     int status = 0;
 
-    set_counters(msr_fd_victim, 0);
-    if (aflag && ATTACKER_CORE != VICTIM_CORE)
-        set_counters(msr_fd_attacker, 1);
+    if (!mflag) { // Set counters unless monitor-only mode
+        set_counters(msr_fd_victim, 0);
+        if (aflag && ATTACKER_CORE != VICTIM_CORE)
+            set_counters(msr_fd_attacker, 1);
+    }
 
     if (aflag && !iflag) {
         sem_post(sem_attacker);
@@ -215,13 +221,17 @@ start_monitor_inline(int victim_pid,
         waitpid(victim_pid, &status, 0);
     }
 
-    dump_results(output_filename, msr_fd_victim, 0);
+    if (!mflag) { // Skip dump result if monitor-only
+        dump_results(output_filename, msr_fd_victim, 0);
+    }
 
     if (aflag) {
         if (!sflag) {
             waitpid(attacker_pid, &status, 0);
         }
-        dump_results(output_filename_attacker, msr_fd_attacker, 1);
+        if (!mflag) { // Skip dump result if monitor-only
+            dump_results(output_filename_attacker, msr_fd_attacker, 1);
+        }
     }
 }
 
@@ -232,9 +242,12 @@ main(int argc, char **argv) {
     int index = 0;
     int option_index = 0;
     pid_t victim_pid = 0;
+    char *env_home = NULL;
     int msr_fd_victim = 0;
+    char *env_build = NULL;
     pid_t attacker_pid = 0;
     int msr_fd_attacker = 0;
+    char *env_install = NULL;
     int repeat = DEFAULT_REPEAT;
     char *config_filename = NULL;
     char *output_filename = NULL;
@@ -244,6 +257,24 @@ main(int argc, char **argv) {
     char *attacker_filename = NULL;
     char *output_filename_attacker = NULL;
 
+    // retrive environment variables (if any)
+    env_home = getenv("SPEC_H");
+    if (env_home == NULL)
+        debug_print("WARNING: SPEC_H not set\n");
+    else
+        debug_print("SPEC_H set to %s", env_home);
+
+    env_build = getenv("SPEC_B");
+    if (env_build == NULL)
+        debug_print("WARNING: SPEC_B not set\n");
+    else
+        debug_print("SPEC_B set to %s", env_build);
+
+    env_install = getenv("SPEC_I");
+    if (env_install == NULL)
+        debug_print("WARNING: SPEC_I not set\n");
+    else
+        debug_print("SPEC_I set to %s", env_install);
 
 #ifdef INTEL
     debug_print("CPU: Intel detected\n");
@@ -265,7 +296,7 @@ main(int argc, char **argv) {
     sched_setaffinity(getpid(), sizeof(cpu_set_t), &set);
 
     /* Reading out params */
-    while ((opt = getopt_long(argc, argv, "hv:a:c:o:qr:id:s",
+    while ((opt = getopt_long(argc, argv, "hv:a:c:o:qr:id:sm",
                 long_options, &option_index)) != -1) {
         switch (opt) {
             case 'h':
@@ -273,15 +304,15 @@ main(int argc, char **argv) {
                 break;
             case 'v':
                 vflag = 1;
-                victim_filename = optarg;
+                victim_filename = get_complete_path(env_install, optarg);
                 break;
             case 'a':
                 aflag = 1;
-                attacker_filename = optarg;
+                attacker_filename = get_complete_path(env_install, optarg);
                 break;
             case 'c':
                 cflag = 1;
-                config_filename = optarg;
+                config_filename = get_complete_path(env_install, optarg);
                 break;
             case 'r':
                 rflag = 1;
@@ -289,10 +320,7 @@ main(int argc, char **argv) {
                 break;
             case 'o':
                 oflag = 1;
-                output_filename = optarg;
-                break;
-            case 'q':
-                qflag = 1;
+                output_filename = get_complete_path(env_install, optarg);
                 break;
             case 'i':
                 iflag = 1;
@@ -309,6 +337,9 @@ main(int argc, char **argv) {
                     fprintf(stderr, "Delay must be positive\n");
                     usage_and_quit(argv);
                 }
+                break;
+            case 'm':
+                mflag = 1;
                 break;
             case 0: // venv
                 aenvflag = 1;
@@ -330,6 +361,29 @@ main(int argc, char **argv) {
                     index++;
                 }
                 break;
+            case 2: //vpar
+                vparflag = 1;
+                index = 2;
+                victim_parameters[1] = optarg;
+                while (optind < argc && argv[optind][0] != '-') {
+                    victim_parameters[index] = argv[optind];
+                    optind++;
+                    index++;
+                }
+                break;
+            case 3: //apar
+                aparflag = 2;
+                index = 2;
+                attacker_parameters[1] = optarg;
+                while (optind < argc && argv[optind][0] != '-') {
+                    attacker_parameters[index] = argv[optind];
+                    optind++;
+                    index++;
+                }
+                break;
+            case 4: //verbose
+                verbflag = 1;
+                break;
             case '?':
                 fprintf(stderr, "Unknown option %c\n", optopt);
                 usage_and_quit(argv);
@@ -346,6 +400,12 @@ main(int argc, char **argv) {
         usage_and_quit(argv);
     }
 
+    victim_parameters[0] = victim_filename;
+
+    if (aflag) {
+        attacker_parameters[0] = attacker_filename;
+    }
+
     if (!aflag && iflag) {
         fprintf(stderr, "Invert option can be specified only in attack/victim mode\n");
         usage_and_quit(argv);
@@ -356,7 +416,7 @@ main(int argc, char **argv) {
         usage_and_quit(argv);
     }
 
-    if(geteuid() != 0) {
+    if(!mflag && geteuid() != 0) {
         fprintf (stderr, "This program must run as root " \
                          "to be able to open msr device\n");
         exit(EXIT_FAILURE);
@@ -373,11 +433,11 @@ main(int argc, char **argv) {
     }
 
     if (!cflag) {
-        config_filename = DEFAULT_CONF_NAME;
+        config_filename = get_complete_path(env_install, DEFAULT_CONF_NAME);
     }
 
     if (!oflag) {
-        output_filename = DEFAULT_OUTPUT_NAME;
+        output_filename = get_complete_path(env_install, DEFAULT_OUTPUT_NAME);
     }
 
     if (aflag) {
@@ -392,53 +452,55 @@ main(int argc, char **argv) {
     sem_init(sem_victim, 1, 1);
     sem_init(sem_attacker, 1, 1);
 
-    parse_config(config_filename);
+    if (!mflag) { // Skip configuration of counters if monitor-only
+        parse_config(config_filename);
 
-    recursive_mkdir(output_filename);
+        recursive_mkdir(output_filename);
 
-    init_result_file(output_filename, 0);
+        init_result_file(output_filename, 0);
 
-    if (aflag) {
-        output_filename_attacker = (char *) malloc(sizeof(char) * FILENAME_LENGTH);
-        snprintf (output_filename_attacker, FILENAME_LENGTH+1, "%s.attacker", output_filename);
-        init_result_file(output_filename_attacker, 1);
-    }
+        if (aflag) {
+            //TODO change from FILENAME_LENGTH to strlen(output_filename)
+            output_filename_attacker = (char *) malloc(sizeof(char) * FILENAME_LENGTH);
+            snprintf (output_filename_attacker, FILENAME_LENGTH+1, "%s.attacker", output_filename);
+            init_result_file(output_filename_attacker, 1);
+        }
 
-    // Opening cpu msr file for the victim cpu
-    msr_path_victim = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
-    snprintf (msr_path_victim, strlen(MSR_FORMAT)+1, MSR_FORMAT, VICTIM_CORE);
+        // Opening cpu msr file for the victim cpu
+        msr_path_victim = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
+        snprintf (msr_path_victim, strlen(MSR_FORMAT)+1, MSR_FORMAT, VICTIM_CORE);
 
-    debug_print("Opening %s device for victim\n", msr_path_victim);
+        debug_print("Opening %s device for victim\n", msr_path_victim);
 
-    // Get fd to MSR register
-    msr_fd_victim = open(msr_path_victim, O_RDWR | O_CLOEXEC);
+        // Get fd to MSR register
+        msr_fd_victim = open(msr_path_victim, O_RDWR | O_CLOEXEC);
 
-    if (msr_fd_victim < 0) {
-        fprintf(stderr, "Impossible to open the %s device\n", msr_path_victim);
-        free(msr_path_victim);
-        exit(EXIT_FAILURE);
-    }
-
-    free(msr_path_victim);
-
-    // Opening cpu msr file for the attacker cpu
-    // if running in attacker/victim mode
-    if (aflag) {
-        msr_path_attacker = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
-        snprintf (msr_path_attacker, strlen(MSR_FORMAT)+1, MSR_FORMAT, ATTACKER_CORE);
-        debug_print("Opening %s device for attacker\n", msr_path_attacker);
-
-        msr_fd_attacker = open(msr_path_attacker, O_RDWR | O_CLOEXEC);
-
-        if(msr_fd_attacker < 0) {
-            fprintf(stderr, "Impossible to open the %s device\n", msr_path_attacker);
-            free(msr_path_attacker);
+        if (msr_fd_victim < 0) {
+            fprintf(stderr, "Impossible to open the %s device\n", msr_path_victim);
+            free(msr_path_victim);
             exit(EXIT_FAILURE);
         }
 
-        free(msr_path_attacker);
-    }
+        free(msr_path_victim);
 
+        // Opening cpu msr file for the attacker cpu
+        // if running in attacker/victim mode
+        if (aflag) {
+            msr_path_attacker = (char *) malloc(sizeof(char) * (strlen(MSR_FORMAT)+1));
+            snprintf (msr_path_attacker, strlen(MSR_FORMAT)+1, MSR_FORMAT, ATTACKER_CORE);
+            debug_print("Opening %s device for attacker\n", msr_path_attacker);
+
+            msr_fd_attacker = open(msr_path_attacker, O_RDWR | O_CLOEXEC);
+
+            if(msr_fd_attacker < 0) {
+                fprintf(stderr, "Impossible to open the %s device\n", msr_path_attacker);
+                free(msr_path_attacker);
+                exit(EXIT_FAILURE);
+            }
+
+            free(msr_path_attacker);
+        }
+    }
     // Repeat X times experiment
     for (int i = 0; i < repeat; ++i) {
 #ifdef DUMMY
@@ -449,7 +511,7 @@ main(int argc, char **argv) {
 
         if(tmp_pid == 0) {
             debug_print("Starting dummy %s on victim core\n", DUMMY_NAME);
-            start_process (DUMMY_NAME, VICTIM_CORE, sem_victim, NULL);
+            start_process (DUMMY_NAME, VICTIM_CORE, sem_victim, NULL, NULL);
         }
         else {
             waitpid(tmp_pid, &status, 0);
@@ -460,7 +522,7 @@ main(int argc, char **argv) {
 
             if(tmp_pid == 0) {
                 debug_print("Starting dummy on attacker core\n");
-                start_process (DUMMY_NAME, ATTACKER_CORE, sem_attacker, NULL);
+                start_process (DUMMY_NAME, ATTACKER_CORE, sem_attacker, NULL, NULL);
             }
             else {
                 waitpid(tmp_pid, &status, 0);
@@ -481,7 +543,7 @@ main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
 
             if (attacker_pid == 0)
-                start_process(attacker_filename, ATTACKER_CORE, sem_attacker, attacker_preload);
+                start_process(attacker_filename, ATTACKER_CORE, sem_attacker, attacker_preload, attacker_parameters);
         }
 
         // STARTING VICTIM
@@ -491,14 +553,20 @@ main(int argc, char **argv) {
             exit(EXIT_FAILURE);
 
         if (victim_pid == 0)
-            start_process(victim_filename, VICTIM_CORE, sem_victim,  victim_preload);
+            start_process(victim_filename, VICTIM_CORE, sem_victim,  victim_preload, victim_parameters);
 
         start_monitor_inline(victim_pid, attacker_pid, output_filename,
                     output_filename_attacker, msr_fd_victim,
                     msr_fd_attacker);
     }
 
-    //clean-up
+    if (!mflag) { // Skip change ownership if in monitor-only mode
+        update_file_owner(output_filename);
+        if (aflag)
+            update_file_owner(output_filename_attacker);
+    }
+
+    //clean-up victim
     for (int i = 0; i < victim_data.free; ++i) {
         free(victim_data.desc[i]);
         free(victim_data.key[i]);
@@ -506,6 +574,7 @@ main(int argc, char **argv) {
         free(victim_data.config_str[i]);
     }
 
+    //clean-up attacker
     for (int i = 0; i < attacker_data.free; ++i) {
         free(attacker_data.desc[i]);
         free(attacker_data.key[i]);
@@ -514,10 +583,12 @@ main(int argc, char **argv) {
     }
 
 #ifdef INTEL
-    // RE-ENABLE ALL COUNTERS
-    write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_victim, 15ull | (7ull << 32));
-    if (aflag)
-        write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_attacker, 15ull | (7ull << 32));
+    if (!mflag) { // Skip re-enabling if in monitor-only mode
+        // RE-ENABLE ALL COUNTERS
+        write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_victim, 15ull | (7ull << 32));
+        if (aflag)
+            write_to_IA32_PERF_GLOBAL_CTRL(msr_fd_attacker, 15ull | (7ull << 32));
+    }
 #endif //INTEL
 
     close(msr_fd_victim);
@@ -526,6 +597,11 @@ main(int argc, char **argv) {
         close(msr_fd_attacker);
         free(output_filename_attacker);
     }
+
+    free(victim_filename);
+    free(config_filename);
+    free(output_filename);
+    free(attacker_filename);
 
     sem_destroy(sem_victim);
     sem_destroy(sem_attacker);

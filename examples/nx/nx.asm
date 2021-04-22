@@ -1,4 +1,4 @@
-; Copyright 2019 IBM Corporation
+; Copyright 2021 IBM Corporation
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@
 
     %include "signals.inc"
     %include "common.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     ; clobbers rax, rdi, rsi, rdx, r8-10
     ; params: address + length

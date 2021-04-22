@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-# Copyright 2019 IBM Corporation
+# Copyright 2021 IBM Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,8 +54,10 @@ def main():
             if not os.access(exec_path, os.X_OK):
                 continue
             try:
-                proc = subprocess.Popen([spec_mon, '-r', str(args.repeat), '-o',
-                                     results_path, '-v', exec_path, '-q'],
+                proc = subprocess.Popen([spec_mon, '-r',
+                                         str(args.repeat),
+                                         '-o', results_path,
+                                         '-v', exec_path],
                                     stdout=subprocess.PIPE)
             except OSError:
                 print("Error during the call of speculator_mon, double check the " \

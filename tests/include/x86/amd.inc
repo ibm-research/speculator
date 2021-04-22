@@ -1,4 +1,4 @@
-; Copyright 2019 IBM Corporation
+; Copyright 2021 IBM Corporation
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
 ; limitations under the License.
 
 %macro reset_counter 0
+    mov rax, SYS_GETUID
+    syscall
+    cmp rax, 0
+    jne %%.skip
     mov rcx, 4
     %%.reset_pr_counters:
     push rcx
@@ -27,6 +31,7 @@
     syscall
     pop rcx
     loopnz %%.reset_pr_counters
+%%.skip:
 %endmacro
 
 %macro msr_seek 0

@@ -1,4 +1,4 @@
-# Copyright 2019 IBM Corporation
+# Copyright 2021 IBM Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 cmake_minimum_required (VERSION 3.1)
-project (SPECULATOR VERSION 1.0.0 LANGUAGES C ASM)
+project (SPECULATOR VERSION 1.2.0 LANGUAGES C ASM)
 
 cmake_policy(SET CMP0048 NEW)
 
@@ -52,7 +52,7 @@ IF (${VENDOR} STREQUAL "AuthenticAMD")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/include/x86/amd.inc
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/amd.inc
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/pmc.inc
         )
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink
@@ -70,7 +70,7 @@ ELSEIF (${VENDOR} STREQUAL "GenuineIntel")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/include/x86/intel.inc
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/intel.inc
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/pmc.inc
         )
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink

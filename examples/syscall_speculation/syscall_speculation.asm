@@ -1,4 +1,4 @@
-; Copyright 2019 IBM Corporation
+; Copyright 2021 IBM Corporation
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 [BITS 64]
     %include "common.inc"
-    %include "intel.inc"
+    %include "pmc.inc"
 
     %define SYS_GETPPID 110
     %define SYS_GETPID 39

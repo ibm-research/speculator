@@ -1,4 +1,4 @@
-// Copyright 2019 IBM Corporation
+// Copyright 2021 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@
 
 #include <config.h>
 
+#include <pwd.h>
+#include <grp.h>
 #include <getopt.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <semaphore.h>
 #include <json-c/json.h>
 #include <perfmon/pfmlib.h>
@@ -46,20 +49,24 @@
 #define USAGE_FORMAT "Speculator v"SPECULATOR_VER"\n" \
                      "Usage: %s --victim/-v victim [--attacker/-a attacker] [--config/-c config]\n\t\t" \
                      "[--output/-o output_file] [--repeat/-r repeat] [--venv ENV1=val ENV2=val]\n\t\t"\
-                     "[--aenv ENV1=val ENV2=val] [--invert/-i] [--delay/-d delay] [--quiet/-q] [--help/-h]\n" \
+                     "[--aenv ENV1=val ENV2=val] [--invert/-i] [--delay/-d delay] [--vpar ARG1 ARG2]\n\t\t" \
+                     "[--apar ARG1 ARG2] [--monitor-only] [--serial/-s] [--verbose] [--help/-h]\n" \
                      "Option Details:\n" \
-                     "\t--victim/-v \tspecifies the victim binary\n" \
-                     "\t--attacker/-a \tspecifies the attacker binary (if any)\n" \
-                     "\t--config/-c \tspecifies the json config file [default: "STR(DEFAULT_CONF_NAME)"]\n" \
-                     "\t--output/-o \tspecifies the output file location [default: "STR(DEFAULT_OUTPUT_NAME)"]\n" \
-                     "\t--repeat/-r \tspecifies the # of tries for the current test [default: "STR(DEFAULT_REPEAT)"]\n" \
-                     "\t--delay/-d \tspecifies the delay in (usec) elapsed between the two threads start in attack/victim mode [default: off]\n" \
-                     "\t--invert/-i \tinverts the order of the threads start [default:attacker thread starts first]\n" \
-                     "\t--venv \t\tspecifies the environment variable to pass to the victim (if any)\n" \
-                     "\t--aenv \t\tspecifies the environment variable to pass to the attacker (if any)\n" \
-                     "\t--serial/-s \tserialize the execution of attacker and victim\n" \
-                     "\t--quiet/-q \tenables quite mode\n" \
-                     "\t--help/-h \tprints this message\n" \
+                     "  --victim/-v \t\tspecifies the victim binary\n" \
+                     "  --attacker/-a \tspecifies the attacker binary (if any)\n" \
+                     "  --config/-c \t\tspecifies the json config file [default: "STR(DEFAULT_CONF_NAME)"]\n" \
+                     "  --output/-o \t\tspecifies the output file location [default: "STR(DEFAULT_OUTPUT_NAME)"]\n" \
+                     "  --repeat/-r \t\tspecifies the # of tries for the current test [default: "STR(DEFAULT_REPEAT)"]\n" \
+                     "  --delay/-d \t\tspecifies the delay in (usec) elapsed between the two threads start in attack/victim mode [default: off]\n" \
+                     "  --invert/-i \t\tinverts the order of the threads start [default:attacker thread starts first]\n" \
+                     "  --venv \t\tspecifies the environment variable to pass to the victim (if any)\n" \
+                     "  --aenv \t\tspecifies the environment variable to pass to the attacker (if any)\n" \
+                     "  --vpar \t\tspecifies the parameters to pass to the victim (if any)\n" \
+                     "  --apar \t\tspecifies the parameters to pass to the attacker (if any)\n"\
+                     "  --serial/-s \t\tserialize the execution of attacker and victim\n" \
+                     "  --monitor-only/-m \tenables monitor only mode, speculator does not set/save PMC and does not require root under this mode\n" \
+                     "  --verbose \t\tenables verbose mode\n" \
+                     "  --help/-h \t\tprints this message\n" \
 
 #define MSR_FORMAT "/dev/cpu/%ld/msr"
 #define FATHER_CORE sysconf(_SC_NPROCESSORS_ONLN) - 1
@@ -110,32 +117,41 @@ static int vflag = 0;     // FLAG victim path
 static int aflag = 0;     // FLAG used to detect victim/attacker mode
 static int cflag = 0;     // FLAG config file option
 static int oflag = 0;     // FLAG output file option
-static int qflag = 0;     // FLAG quite mode
 static int rflag = 0;     // FLAG repeat option
 static int iflag = 0;     // FLAG invert start of attack/victim
 static int dflag = 0;     // FLAG delay flag
 static int sflag = 0;     // FLAG serial execution of attack/victim
-static int venvflag = 0;  // FLAG venv option
-static int aenvflag = 0;  // FLAG aenv option
+static int mflag = 0;     // FLAG monitor-only mode
+static int verbflag = 0;  // FLAG verbose mode
+static int venvflag = 0;  // FLAG victim env var option
+static int aenvflag = 0;  // FLAG attacker env var option
+static int vparflag = 0;  // FLAG victim parameters
+static int aparflag = 0;  // FLAG attacker parameters
 
 static int delay = 0;
 static char *victim_preload[100] = {NULL};
 static char *attacker_preload[100] = {NULL};
 
+static char *victim_parameters[100] = {NULL};
+static char *attacker_parameters[100] = {NULL};
+
 // Speculator commandline options
 static struct option long_options[] = {
-    {"help",        no_argument,        NULL, 'h'},
-    {"victim",      required_argument,  NULL, 'v'},
-    {"attacker",    required_argument,  NULL, 'a'},
-    {"config",      required_argument,  NULL, 'c'},
-    {"output",      required_argument,  NULL, 'o'},
-    {"quiet",       no_argument,        NULL, 'q'},
-    {"repeat",      required_argument,  NULL, 'r'},
-    {"invert",      no_argument,        NULL, 'i'},
-    {"delay",       required_argument,  NULL, 'd'},
-    {"serial",      no_argument,        NULL, 's'},
-    {"venv",        required_argument,  NULL, 0},
-    {"aenv",        required_argument,  NULL, 1},
+    {"help",            no_argument,        NULL, 'h'},
+    {"victim",          required_argument,  NULL, 'v'},
+    {"attacker",        required_argument,  NULL, 'a'},
+    {"config",          required_argument,  NULL, 'c'},
+    {"output",          required_argument,  NULL, 'o'},
+    {"repeat",          required_argument,  NULL, 'r'},
+    {"invert",          no_argument,        NULL, 'i'},
+    {"delay",           required_argument,  NULL, 'd'},
+    {"serial",          no_argument,        NULL, 's'},
+    {"monitor-only",    no_argument,        NULL, 'm'},
+    {"venv",            required_argument,  NULL, 0},
+    {"aenv",            required_argument,  NULL, 1},
+    {"vpar",            required_argument,  NULL, 2},
+    {"apar",            required_argument,  NULL, 3},
+    {"verbose",         no_argument,        NULL, 4},
     {0, 0, 0, 0}
 };
 
@@ -152,6 +168,45 @@ attacker_data = {{NULL}, {NULL}, {NULL}, {NULL},
         {0}, {0}, {0}, 0, 0};
 
 void
+update_file_owner(char *filename) {
+    uid_t uid;
+    gid_t gid;
+    char *user_name;
+    struct group *grp;
+    struct passwd *pwd;
+
+    // Change files iinformation
+    user_name = getenv("SUDO_USER");
+    if (user_name == NULL) {
+        debug_print("Speculator is not running under sudo\n");
+        return;
+    }
+    else {
+        pwd = getpwnam(user_name);
+
+        if (pwd == NULL) {
+            debug_print("Impossible to get passwd entry\n");
+            return;
+        }
+        uid = pwd->pw_uid;
+
+        grp = getgrnam(user_name);
+
+        if (grp == NULL) {
+            debug_print("Impossible to get group entry\n");
+            return;
+        }
+
+        gid = pwd->pw_gid;
+
+        if (chown(filename, uid, gid) == -1) {
+            debug_print("Impossible to change owner of the file\n");
+        }
+        return;
+    }
+}
+
+void
 recursive_mkdir(char *path) {
     char *tmp_path = NULL;
     char *tmp_dir = NULL;
@@ -162,11 +217,38 @@ recursive_mkdir(char *path) {
     if (access(tmp_dir, F_OK) != -1) return;
 
     recursive_mkdir(tmp_dir);
+
     if (mkdir (tmp_dir, 0755) == -1) {
         fprintf(stderr, "Error: Impossible to create the new folder at this time.");
         exit(EXIT_FAILURE);
     }
+
+    update_file_owner(tmp_dir);
+
     return;
+}
+
+char *
+get_complete_path(char *path, char *filename) {
+    char *buffer;
+    if (filename[0] == '/' || filename[0] == '.') { // is filename already absolute?
+        debug_print("Absolute path detected\n");
+        buffer = (char *) malloc (strlen(filename) + 2);
+        strcpy(buffer, filename);
+        return buffer;
+    }
+    else {
+        if (path == NULL) { //in case a path has to stay relative
+            buffer = (char *) malloc(strlen(filename) + 2);
+            strcpy(buffer, filename);
+            return buffer;
+        }
+        debug_print("Relative path detected\n");
+        buffer = (char *) malloc(strlen(path) + strlen(filename) + 2);
+        strcpy(buffer, path);
+        strcat(buffer, "/");
+        return strcat(buffer, filename);
+    }
 }
 
 void

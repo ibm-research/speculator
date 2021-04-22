@@ -1,4 +1,4 @@
-; Copyright 2019 IBM Corporation
+; Copyright 2021 IBM Corporation
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 %define SYS_GETCPU 309
 %define SYS_PREAD64 17
 %define SYS_PWRITE64 18
+%define SYS_GETUID 102
 %define SYS_RT_SIGACTION 13
 %define SYS_RT_SIGRETURN 15
 %define VICTIM_PROCESS @VICTIM_CORE@
