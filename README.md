@@ -19,21 +19,21 @@ For more infomation please refer to the [wiki](https://github.com/ibm-research/s
 `others`: the other branches represent currently developed features
 
 ## Publications
-* [1] A. Mambretti, A. Sandulescu, M. Neugschwandtner, A. Sorniotti, A. Kurmus
-      Two Methods for Exploiting Speculative Control Flow Hijacks.
+* [1] A. Mambretti, A. Sandulescu, M. Neugschwandtner, A. Sorniotti, A. Kurmus  
+      Two Methods for Exploiting Speculative Control Flow Hijacks.  
       13th USENIX Workshop on Offensive Technologies (WOOT), Santa Clara, CA, USA, August 2019
 
-* [2] A. Mambretti, M. Neugschwandtner, A. Sorniotti, E. Kirda, W. Robertson, A. Kurmus
-      Speculator: A Tool to Analyze Speculative Execution Attacks and Mitigations
+* [2] A. Mambretti, M. Neugschwandtner, A. Sorniotti, E. Kirda, W. Robertson, A. Kurmus  
+      Speculator: A Tool to Analyze Speculative Execution Attacks and Mitigations  
       35th Annual Computer Security Applications Conference (ACSAC), San Juan, Puerto Rico, December 2019
 
-* [3] A. Mambretti, P. Convertini, A. Sorniotti, A. Sandulescu, E. Kirda, A. Kurmus
-      GhostBuster: understanding and overcoming the pitfalls of transient execution vulnerability checkers
+* [3] A. Mambretti, P. Convertini, A. Sorniotti, A. Sandulescu, E. Kirda, A. Kurmus  
+      GhostBuster: understanding and overcoming the pitfalls of transient execution vulnerability checkers  
       28th IEEE International Conference on Software Analysis, Evolution and Reengineering (SANER), Honolulu, Hawaii, March 2021
 
-* [4] A. Mambretti, A. Sandulescu, A. Sorniotti, W. Robertson, E. Kirda, A. Kurmus
-      Bypassing memory safety mechanisms through speculative control flow hijacking
-      6th IEEE European Symposium on Security and Privacy (EuroSP), Wien, Austria, September 2021
+* [4] A. Mambretti, A. Sandulescu, A. Sorniotti, W. Robertson, E. Kirda, A. Kurmus  
+      Bypassing memory safety mechanisms through speculative control flow hijacking  
+      6th IEEE European Symposium on Security and Privacy (EuroSP), Vienna, Austria, September 2021
 
 ### Git flow
 This repository follows the [git-flow][git-flow] branching model. Make sure to read and
