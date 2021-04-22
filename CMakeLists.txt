@@ -13,7 +13,7 @@
 # limitations under the License.
 
 cmake_minimum_required (VERSION 3.1)
-project (SPECULATOR VERSION 1.0.0 LANGUAGES C ASM)
+project (SPECULATOR VERSION 1.1.0 LANGUAGES C ASM)
 
 cmake_policy(SET CMP0048 NEW)
 
