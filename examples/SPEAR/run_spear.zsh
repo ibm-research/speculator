@@ -1,3 +1,5 @@
+#!/bin/zsh
+
 if (( ${+SPEC_I} )) then
     echo -e "\e[33mSPEC_I is set to ${SPEC_I}\e[39m"
 else
