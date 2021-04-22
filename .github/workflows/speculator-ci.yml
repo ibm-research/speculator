@@ -99,4 +99,9 @@ jobs:
                   SPEC_B: ./build
                   SPEC_I: ./install
             - name: SPEAR tests
-              run: zsh $SPEC_H/examples/SPEAR/link_spear.zsh && zsh $SPEC_H/examples/SPEAR/run_spear.zsh && rm -rf $SPEC_H/tests/*.asm && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              run: cp $SPEC_H/examples/SPEAR/*/*/*.asm $SPEC_H/tests && zsh $SPEC_H/examples/SPEAR/run_spear.zsh && rm -rf $SPEC_H/tests/*.asm && rm -rf $SPEC_I/* && rm -rf $SPEC_B/*
+              env:
+                  SPEC_H: ./
+                  SPEC_B: ./build
+                  SPEC_I: ./install
+
