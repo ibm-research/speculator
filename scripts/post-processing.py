@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright 2021 IBM Corporation
 #
@@ -173,7 +173,7 @@ def main():
                         final.write ("---------------------------------------------------------\n")
                         table.drop(engine)
 
-    except IOError, e:
+    except IOError as e:
         print ("{}".format(e))
         exit(-1)
 
